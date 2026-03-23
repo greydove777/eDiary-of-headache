@@ -7,636 +7,637 @@
   <meta name="apple-mobile-web-app-capable" content="yes"/>
   <meta name="apple-mobile-web-app-status-bar-style" content="default"/>
   <meta name="apple-mobile-web-app-title" content="頭痛日記"/>
-  <meta name="description" content="頭痛症狀記錄與追蹤工具 - 台灣頭痛學會建議格式"/>
   <link rel="manifest" href="manifest.json"/>
   <link rel="apple-touch-icon" href="icon-192.png"/>
-  <link rel="icon" type="image/png" href="icon-192.png"/>
   <title>頭痛日記</title>
   <style>
     *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
-    body{background:#d2eaf8;overscroll-behavior:none}
+    html,body{height:100%;background:#d2eaf8;overscroll-behavior:none;font-family:'Microsoft JhengHei','PingFang TC','Noto Sans TC',sans-serif}
     #root{min-height:100vh}
     input[type=range]{-webkit-appearance:none;width:100%;height:6px;border-radius:3px;background:rgba(74,138,176,0.2);outline:none}
     input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:22px;height:22px;border-radius:50%;background:#4a9abf;cursor:pointer;box-shadow:0 2px 6px rgba(42,130,170,0.4)}
-    input,select,textarea{outline:none}
-    select{-webkit-appearance:none;appearance:none}
+    input,select,textarea{outline:none;font-family:inherit}
+    select{-webkit-appearance:none}
     ::-webkit-scrollbar{width:4px}
     ::-webkit-scrollbar-thumb{background:rgba(74,138,176,0.3);border-radius:2px}
+    .btn{cursor:pointer;border:none;font-family:inherit}
+    /* Auth */
+    .auth-root{min-height:100vh;background:linear-gradient(160deg,#e8f5fb,#d2eaf8,#bcdff5);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px}
+    .auth-card{background:rgba(255,255,255,0.9);border:1px solid rgba(74,154,191,0.2);border-radius:20px;padding:32px;width:100%;max-width:360px;box-shadow:0 4px 24px rgba(74,154,191,0.12)}
+    .auth-title{text-align:center;margin-bottom:24px}
+    .auth-input{width:100%;padding:12px 14px;border:1px solid rgba(74,138,176,0.3);border-radius:10px;font-size:15px;margin-bottom:12px;background:rgba(255,255,255,0.9);color:#1a3a52}
+    .auth-btn-blue{width:100%;padding:13px;background:linear-gradient(135deg,#4a9abf,#2a82aa);border-radius:10px;color:#fff;font-size:15px;margin-bottom:10px;box-shadow:0 3px 12px rgba(42,130,170,0.2)}
+    .auth-btn-green{width:100%;padding:13px;background:linear-gradient(135deg,#3aaa7a,#2a8a5a);border-radius:10px;color:#fff;font-size:15px;margin-bottom:10px}
+    .auth-err{color:#d04040;font-size:12px;margin-bottom:10px;text-align:center}
+    .auth-link{color:#2a82aa;font-size:13px;text-align:center;cursor:pointer;text-decoration:underline}
+    /* App */
+    .app-root{min-height:100vh;background:linear-gradient(160deg,#e8f5fb,#d2eaf8,#bcdff5);color:#1a3a52;display:flex;flex-direction:column;align-items:center}
+    .app-header{width:100%;max-width:520px;padding:16px 20px 0;display:flex;align-items:center;justify-content:space-between}
+    .app-main{width:100%;max-width:520px;padding:16px 20px 32px;flex:1}
+    .card{background:rgba(255,255,255,0.82);border:1px solid rgba(74,154,191,0.18);border-radius:16px;padding:20px;margin-bottom:14px;box-shadow:0 2px 14px rgba(74,154,191,0.08)}
+    .nav-btn{background:transparent;border:none;color:#7aaac8;font-size:13px;padding:6px 12px;cursor:pointer;border-radius:6px;font-family:inherit}
+    .nav-btn.active{background:rgba(74,154,191,0.16);color:#2a82aa}
+    .lbl{font-size:11px;letter-spacing:.08em;color:#7aaac8;margin-bottom:6px;display:block;text-transform:uppercase}
+    .inp{background:rgba(255,255,255,0.85);border:1px solid rgba(74,138,176,0.3);border-radius:8px;color:#1a3a52;padding:9px 12px;font-size:15px;box-sizing:border-box}
+    .pill{display:inline-block;padding:7px 14px;margin:3px;border-radius:20px;border:1px solid rgba(74,138,176,0.25);background:rgba(255,255,255,0.7);color:#5a8aaa;font-size:13px;cursor:pointer}
+    .pill.active{border-color:#4a9abf;background:rgba(74,154,191,0.2);color:#1a5a7a}
+    .primary-btn{background:linear-gradient(135deg,#4a9abf,#2a82aa);border:none;border-radius:10px;color:#fff;padding:12px 24px;font-size:15px;cursor:pointer;box-shadow:0 3px 12px rgba(42,130,170,0.22);font-family:inherit}
+    .back-btn{background:rgba(255,255,255,0.7);border:1px solid rgba(74,138,176,0.25);border-radius:10px;color:#4a7a9a;padding:10px 18px;font-size:14px;cursor:pointer;font-family:inherit}
+    .pain-badge{border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:bold;flex-shrink:0}
+    .footer-note{padding:12px 20px;font-size:11px;color:#7aaac8;text-align:center}
   </style>
 </head>
 <body>
-  <div id="root"></div>
-  <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
-  <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
-  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-  <script type="text/babel" data-presets="react">
+<div id="root"></div>
+<script>
+const SYMPTOMS = ["噁心或嘔吐","怕光","怕吵","搏動性疼痛","單側頭痛","活動使頭痛加劇"];
+const MEDICATIONS = ["未服藥","布洛芬","普拿疼/乙醯胺酚","阿斯匹靈","舒馬曲坦","利紮曲坦","萘普生","其他"];
+const DIZ_LEVELS = ["輕微","中等","嚴重"];
 
+const todayInfo=()=>{const d=new Date();return{year:d.getFullYear(),month:d.getMonth()+1,day:d.getDate()}};
+const daysInMonth=(y,m)=>new Date(y,m,0).getDate();
+const monthKey=(y,m)=>`${y}-${String(m).padStart(2,'0')}`;
+const painColor=v=>{const n=parseInt(v);if(!n)return'#7aaac8';if(n<=3)return'#2a9a6a';if(n<=6)return'#e09020';return'#d04040'};
+const painBg=v=>{const n=parseInt(v);if(!n)return'rgba(74,138,176,0.08)';if(n<=3)return'rgba(42,154,106,0.12)';if(n<=6)return'rgba(224,144,32,0.12)';return'rgba(208,64,64,0.12)'};
 
-const SYMPTOMS = ["噁心或嘔吐", "怕光", "怕吵", "搏動性疼痛", "單側頭痛", "活動使頭痛加劇"];
-const MEDICATIONS = ["未服藥", "布洛芬", "普拿疼／乙醯胺酚", "阿斯匹靈", "舒馬曲坦", "利紮曲坦", "萘普生", "其他"];
-const DIZZINESS_LEVELS = ["輕微", "中等", "嚴重"];
+// ── 帳號 ──
+const getAccounts=()=>{try{return JSON.parse(localStorage.getItem('hd-accounts')||'{}')}catch{return{}}};
+const saveAccounts=a=>{try{localStorage.setItem('hd-accounts',JSON.stringify(a))}catch{}};
+const hashPass=s=>{let h=0;for(let i=0;i<s.length;i++)h=(Math.imul(31,h)+s.charCodeAt(i))|0;return String(h)};
 
-const todayInfo = () => {
-  const d = new Date();
-  return { year: d.getFullYear(), month: d.getMonth() + 1, day: d.getDate() };
+// ── 狀態 ──
+let state={
+  user:null,
+  view:'calendar',
+  year:todayInfo().year,
+  month:todayInfo().month,
+  selectedDay:todayInfo().day,
+  monthData:{},
+  nextVisit:'',
+  authMode:'login',
+  authErr:'',
 };
 
-const defaultDayEntry = () => ({
-  morning: "", afternoon: "", evening: "",
-  symptoms: [],
-  duration: "",
-  medication: "未服藥", medicationEffect: "",
-  stress: "",
-  exercise: "",
-  dizzy: false,
-  dizzyLevel: "",
-});
+const defEntry=()=>({morning:'',afternoon:'',evening:'',symptoms:[],duration:'',medication:'未服藥',medicationEffect:'',stress:'',exercise:'',dizzy:false,dizzyLevel:''});
+const getEntry=day=>state.monthData[day]||defEntry();
+const userKey=suf=>state.user?`hd-${state.user.id}-${suf}`:null;
+const mKey=()=>monthKey(state.year,state.month);
 
-const C = {
-  bg: "linear-gradient(160deg, #e8f5fb 0%, #d2eaf8 50%, #bcdff5 100%)",
-  card: "rgba(255,255,255,0.82)",
-  cardBorder: "rgba(74,154,191,0.18)",
-  primary: "#2a82aa",
-  primaryLight: "#4a9abf",
-  text: "#1a3a52",
-  textMid: "#4a7a9a",
-  textLight: "#7aaac8",
-  pillActive: "rgba(74,154,191,0.2)",
-  pillActiveBorder: "#4a9abf",
-  pillActiveText: "#1a5a7a",
-  pillText: "#5a8aaa",
-  pillBorder: "rgba(74,138,176,0.25)",
-  pillBg: "rgba(255,255,255,0.7)",
-  green: "#2a9a6a", orange: "#e09020", red: "#d04040",
-};
-const FF = "'Microsoft JhengHei','Noto Sans TC','PingFang TC',sans-serif";
-
-const painColor = (v) => {
-  const n = parseInt(v);
-  if (!n) return C.textLight;
-  if (n <= 3) return C.green;
-  if (n <= 6) return C.orange;
-  return C.red;
-};
-const daysInMonth = (y, m) => new Date(y, m, 0).getDate();
-const monthKey = (y, m) => `${y}-${String(m).padStart(2, "0")}`;
-
-// ══════════════════════════════
-//  帳號管理
-// ══════════════════════════════
-const getAccounts = () => {
-  try { return JSON.parse(localStorage.getItem("hd-accounts") || "{}"); } catch { return {}; }
-};
-const saveAccounts = (acc) => {
-  try { localStorage.setItem("hd-accounts", JSON.stringify(acc)); } catch {}
-};
-const hashPass = (s) => {
-  let h = 0;
-  for (let i = 0; i < s.length; i++) h = (Math.imul(31, h) + s.charCodeAt(i)) | 0;
-  return String(h);
-};
-
-// ══════════════════════════════
-//  登入 / 註冊 畫面
-// ══════════════════════════════
-function AuthScreen({ onLogin }) {
-  const [mode, setMode] = useState("login"); // login | register
-  const [name, setName] = useState("");
-  const [pass, setPass] = useState("");
-  const [pass2, setPass2] = useState("");
-  const [err, setErr] = useState("");
-
-  const S = {
-    root: { minHeight: "100vh", background: C.bg, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", fontFamily: FF, padding: 24 },
-    card: { background: "rgba(255,255,255,0.88)", border: `1px solid ${C.cardBorder}`, borderRadius: 20, padding: 32, width: "100%", maxWidth: 380, boxShadow: "0 4px 24px rgba(74,154,191,0.12)" },
-    input: { width: "100%", background: "rgba(255,255,255,0.9)", border: `1px solid rgba(74,138,176,0.3)`, borderRadius: 10, color: C.text, padding: "12px 14px", fontSize: 15, fontFamily: FF, boxSizing: "border-box", marginBottom: 12 },
-    btn: (col) => ({ width: "100%", padding: "13px", background: `linear-gradient(135deg,${col === "blue" ? C.primaryLight + "," + C.primary : "#3aaa7a,#2a8a5a"})`, border: "none", borderRadius: 10, color: "#fff", fontSize: 15, fontFamily: FF, cursor: "pointer", marginBottom: 10, boxShadow: "0 3px 12px rgba(42,130,170,0.2)" }),
-    err: { color: C.red, fontSize: 12, marginBottom: 10, textAlign: "center" },
-    link: { color: C.primary, fontSize: 13, textAlign: "center", cursor: "pointer", textDecoration: "underline" },
-  };
-
-  const handleLogin = () => {
-    setErr("");
-    if (!name.trim() || !pass) { setErr("請輸入姓名與密碼"); return; }
-    const accs = getAccounts();
-    const key = name.trim().toLowerCase();
-    if (!accs[key]) { setErr("找不到此帳號，請先註冊"); return; }
-    if (accs[key].hash !== hashPass(pass)) { setErr("密碼錯誤"); return; }
-    onLogin(key, accs[key].displayName);
-  };
-
-  const handleRegister = () => {
-    setErr("");
-    if (!name.trim() || !pass) { setErr("請輸入姓名與密碼"); return; }
-    if (pass.length < 4) { setErr("密碼至少需要 4 個字元"); return; }
-    if (pass !== pass2) { setErr("兩次密碼不一致"); return; }
-    const accs = getAccounts();
-    const key = name.trim().toLowerCase();
-    if (accs[key]) { setErr("此姓名已被使用，請換一個"); return; }
-    accs[key] = { displayName: name.trim(), hash: hashPass(pass) };
-    saveAccounts(accs);
-    onLogin(key, name.trim());
-  };
-
-  return (
-    <div style={S.root}>
-      <div style={S.card}>
-        <div style={{ textAlign: "center", marginBottom: 24 }}>
-          <div style={{ fontSize: 48 }}>🧠</div>
-          <div style={{ fontSize: 22, fontWeight: "bold", color: C.primary, marginTop: 8 }}>頭痛日記</div>
-          <div style={{ fontSize: 12, color: C.textLight, marginTop: 4 }}>台灣頭痛學會建議格式</div>
-        </div>
-
-        {err && <div style={S.err}>{err}</div>}
-
-        <input style={S.input} placeholder="姓名" value={name} onChange={e => setName(e.target.value)} />
-        <input style={S.input} type="password" placeholder="密碼" value={pass} onChange={e => setPass(e.target.value)}
-          onKeyDown={e => e.key === "Enter" && (mode === "login" ? handleLogin() : null)} />
-        {mode === "register" && (
-          <input style={S.input} type="password" placeholder="確認密碼" value={pass2} onChange={e => setPass2(e.target.value)} />
-        )}
-
-        {mode === "login" ? (
-          <>
-            <button style={S.btn("blue")} onClick={handleLogin}>登入</button>
-            <div style={S.link} onClick={() => { setMode("register"); setErr(""); }}>還沒有帳號？點此註冊</div>
-          </>
-        ) : (
-          <>
-            <button style={S.btn("green")} onClick={handleRegister}>建立帳號</button>
-            <div style={S.link} onClick={() => { setMode("login"); setErr(""); }}>已有帳號？點此登入</div>
-          </>
-        )}
-      </div>
-      <div style={{ fontSize: 10, color: C.textLight, marginTop: 16, textAlign: "center" }}>
-        資料僅儲存在此裝置，不會上傳至任何伺服器
-      </div>
-    </div>
-  );
+function loadMonth(){
+  if(!state.user)return;
+  try{
+    const d=localStorage.getItem(userKey(`data-${mKey()}`));
+    state.monthData=d?JSON.parse(d):{};
+    const nv=localStorage.getItem(userKey(`nv-${mKey()}`));
+    state.nextVisit=nv||'';
+  }catch{state.monthData={};state.nextVisit='';}
 }
 
-// ══════════════════════════════
-//  主日記 App
-// ══════════════════════════════
-function HeadacheDiary() {
-  const [user, setUser] = useState(null); // { id, name }
-  const [view, setView] = useState("calendar");
-  const t = todayInfo();
-  const [year, setYear] = useState(t.year);
-  const [month, setMonth] = useState(t.month);
-  const [selectedDay, setSelectedDay] = useState(t.day);
-  const [monthData, setMonthData] = useState({});
-  const [nextVisit, setNextVisit] = useState("");
+function saveDay(day,data){
+  if(!state.user)return;
+  state.monthData={...state.monthData,[day]:data};
+  try{localStorage.setItem(userKey(`data-${mKey()}`),JSON.stringify(state.monthData))}catch{}
+}
 
-  // 嘗試自動登入（記住上次登入）
-  useEffect(() => {
-    try {
-      const saved = localStorage.getItem("hd-current-user");
-      if (saved) { const u = JSON.parse(saved); setUser(u); }
-    } catch {}
-  }, []);
+function saveNextVisit(v){
+  state.nextVisit=v;
+  try{localStorage.setItem(userKey(`nv-${mKey()}`),v)}catch{}
+}
 
-  const handleLogin = (id, name) => {
-    const u = { id, name };
-    setUser(u);
-    try { localStorage.setItem("hd-current-user", JSON.stringify(u)); } catch {}
+// 嘗試自動登入
+try{const u=JSON.parse(localStorage.getItem('hd-current-user')||'null');if(u){state.user=u;loadMonth();}}catch{}
+
+// ── render ──
+function render(){
+  const root=document.getElementById('root');
+  root.innerHTML='';
+  if(!state.user){renderAuth(root);}
+  else{renderApp(root);}
+}
+
+// ── 登入畫面 ──
+function renderAuth(root){
+  const div=el('div',{className:'auth-root'});
+  const card=el('div',{className:'auth-card'});
+
+  const titleDiv=el('div',{className:'auth-title'});
+  titleDiv.innerHTML='<div style="font-size:48px">🧠</div><div style="font-size:22px;font-weight:bold;color:#2a82aa;margin-top:8px">頭痛日記</div><div style="font-size:12px;color:#7aaac8;margin-top:4px">台灣頭痛學會建議格式</div>';
+  card.appendChild(titleDiv);
+
+  const errDiv=el('div',{className:'auth-err',id:'auth-err'});
+  errDiv.textContent=state.authErr||'';
+  card.appendChild(errDiv);
+
+  const nameInp=el('input',{className:'auth-input btn',placeholder:'姓名（作為登入帳號）',type:'text'});
+  card.appendChild(nameInp);
+  const passInp=el('input',{className:'auth-input btn',placeholder:'密碼',type:'password'});
+  card.appendChild(passInp);
+
+  let pass2Inp=null;
+  if(state.authMode==='register'){
+    pass2Inp=el('input',{className:'auth-input btn',placeholder:'確認密碼',type:'password'});
+    card.appendChild(pass2Inp);
+  }
+
+  const mainBtn=el('button',{className:`btn ${state.authMode==='login'?'auth-btn-blue':'auth-btn-green'}`});
+  mainBtn.textContent=state.authMode==='login'?'登入':'建立帳號';
+  mainBtn.onclick=()=>{
+    const name=nameInp.value.trim();
+    const pass=passInp.value;
+    const pass2=pass2Inp?pass2Inp.value:'';
+    state.authErr='';
+    if(!name||!pass){state.authErr='請輸入姓名與密碼';render();return;}
+    const accs=getAccounts();
+    const key=name.toLowerCase();
+    if(state.authMode==='login'){
+      if(!accs[key]){state.authErr='找不到此帳號，請先註冊';render();return;}
+      if(accs[key].hash!==hashPass(pass)){state.authErr='密碼錯誤';render();return;}
+      state.user={id:key,name:accs[key].displayName};
+    } else {
+      if(pass.length<4){state.authErr='密碼至少需要4個字元';render();return;}
+      if(pass!==pass2){state.authErr='兩次密碼不一致';render();return;}
+      if(accs[key]){state.authErr='此姓名已被使用';render();return;}
+      accs[key]={displayName:name,hash:hashPass(pass)};
+      saveAccounts(accs);
+      state.user={id:key,name};
+    }
+    try{localStorage.setItem('hd-current-user',JSON.stringify(state.user))}catch{}
+    state.authErr='';
+    state.view='calendar';
+    loadMonth();
+    render();
   };
+  card.appendChild(mainBtn);
 
-  const handleLogout = () => {
-    setUser(null);
-    try { localStorage.removeItem("hd-current-user"); } catch {}
+  const switchLink=el('div',{className:'auth-link'});
+  switchLink.textContent=state.authMode==='login'?'還沒有帳號？點此註冊':'已有帳號？點此登入';
+  switchLink.onclick=()=>{state.authMode=state.authMode==='login'?'register':'login';state.authErr='';render();};
+  card.appendChild(switchLink);
+
+  div.appendChild(card);
+  const note=el('div',{style:'font-size:10px;color:#7aaac8;margin-top:16px;text-align:center'});
+  note.textContent='資料僅儲存在此裝置，不會上傳至任何伺服器';
+  div.appendChild(note);
+  root.appendChild(div);
+}
+
+// ── App ──
+function renderApp(root){
+  const wrap=el('div',{className:'app-root'});
+
+  // Header
+  const hdr=el('div',{className:'app-header'});
+  const logo=el('div',{style:'display:flex;align-items:center;gap:8px'});
+  logo.innerHTML=`<span style="font-size:14px;color:#2a82aa;font-weight:bold">🧠 頭痛日記</span><span style="font-size:12px;color:#7aaac8">· ${state.user.name}</span>`;
+  hdr.appendChild(logo);
+
+  const nav=el('div',{style:'display:flex;gap:4px;align-items:center'});
+  [['calendar','月曆'],['stats','統計']].forEach(([v,l])=>{
+    const b=el('button',{className:'nav-btn btn'+(state.view===v?' active':'')});
+    b.textContent=l;b.onclick=()=>{state.view=v;render();};
+    nav.appendChild(b);
+  });
+  const pdfBtn=el('button',{className:'nav-btn btn',style:'background:rgba(42,150,100,0.1);color:#2a8a5a'});
+  pdfBtn.textContent='🖨️';pdfBtn.onclick=exportPDF;
+  nav.appendChild(pdfBtn);
+  const logoutBtn=el('button',{className:'nav-btn btn',style:'color:#d04040cc;font-size:11px'});
+  logoutBtn.textContent='登出';
+  logoutBtn.onclick=()=>{
+    state.user=null;try{localStorage.removeItem('hd-current-user')}catch{}
+    state.view='calendar';state.authMode='login';state.authErr='';render();
   };
+  nav.appendChild(logoutBtn);
+  hdr.appendChild(nav);
+  wrap.appendChild(hdr);
 
-  const userKey = (suffix) => user ? `hd-${user.id}-${suffix}` : null;
-  const key = monthKey(year, month);
+  const main=el('div',{className:'app-main'});
+  if(state.view==='calendar')renderCalendar(main);
+  else if(state.view==='entry')renderEntry(main);
+  else if(state.view==='stats')renderStats(main);
+  wrap.appendChild(main);
 
-  useEffect(() => {
-    if (!user) return;
-    try {
-      const saved = localStorage.getItem(userKey(`data-${key}`));
-      setMonthData(saved ? JSON.parse(saved) : {});
-      const nv = localStorage.getItem(userKey(`nv-${key}`));
-      setNextVisit(nv || "");
-    } catch {}
-  }, [key, user]);
+  const footer=el('div',{className:'footer-note'});
+  footer.textContent='內容根據台灣頭痛學會之建議制定 · 僅供個人記錄，非醫療建議';
+  wrap.appendChild(footer);
+  root.appendChild(wrap);
+}
 
-  const saveDay = useCallback((day, data) => {
-    if (!user) return;
-    const updated = { ...monthData, [day]: data };
-    setMonthData(updated);
-    try { localStorage.setItem(userKey(`data-${key}`), JSON.stringify(updated)); } catch {}
-  }, [monthData, key, user]);
+// ── 月曆 ──
+function renderCalendar(main){
+  const t=todayInfo();
+  const totalDays=daysInMonth(state.year,state.month);
+  const firstDay=new Date(state.year,state.month-1,1).getDay();
 
-  const saveNextVisit = (val) => {
-    setNextVisit(val);
-    try { localStorage.setItem(userKey(`nv-${key}`), val); } catch {}
-  };
+  // 計算統計
+  const stats=calcStats();
 
-  const getDayEntry = (day) => monthData[day] || defaultDayEntry();
-  const currentEntry = getDayEntry(selectedDay);
-  const updateEntry = (field, value) => saveDay(selectedDay, { ...currentEntry, [field]: value });
-  const toggleSymptom = (s) => {
-    const list = currentEntry.symptoms || [];
-    updateEntry("symptoms", list.includes(s) ? list.filter(x => x !== s) : [...list, s]);
-  };
+  // 月份卡
+  const calCard=el('div',{className:'card'});
 
-  const hasData = (day) => {
-    const e = monthData[day];
-    return e && (e.morning || e.afternoon || e.evening || (e.symptoms && e.symptoms.length > 0));
-  };
-  const maxPain = (day) => {
-    const e = monthData[day];
-    if (!e) return 0;
-    return Math.max(parseInt(e.morning) || 0, parseInt(e.afternoon) || 0, parseInt(e.evening) || 0);
-  };
-  const totalDays = daysInMonth(year, month);
-  const firstDay = new Date(year, month - 1, 1).getDay();
+  // 月份導覽
+  const monthNav=el('div',{style:'display:flex;align-items:center;justify-content:space-between;margin-bottom:12px'});
+  const prevBtn=el('button',{className:'back-btn btn',style:'padding:6px 14px;font-size:16px'});prevBtn.textContent='‹';
+  prevBtn.onclick=()=>{if(state.month===1){state.year--;state.month=12;}else state.month--;state.selectedDay=1;loadMonth();render();};
+  monthNav.appendChild(prevBtn);
 
-  const prevMonth = () => { if (month === 1) { setYear(y => y - 1); setMonth(12); } else setMonth(m => m - 1); setSelectedDay(1); };
-  const nextMonth = () => { if (month === 12) { setYear(y => y + 1); setMonth(1); } else setMonth(m => m + 1); setSelectedDay(1); };
+  const monthTitle=el('div',{style:'text-align:center'});
+  monthTitle.innerHTML=`<div style="font-size:18px;font-weight:bold;color:#2a82aa">${state.year} 年 ${state.month} 月</div>`;
+  const nvRow=el('div',{style:'font-size:11px;color:#7aaac8;margin-top:4px;display:flex;align-items:center;justify-content:center;gap:6px'});
+  nvRow.appendChild(document.createTextNode('下次回診：'));
+  const nvInp=el('input',{type:'date',className:'inp',style:'display:inline;width:auto;padding:2px 8px;font-size:12px'});
+  nvInp.value=state.nextVisit;
+  nvInp.onchange=e=>{saveNextVisit(e.target.value);};
+  nvRow.appendChild(nvInp);
+  monthTitle.appendChild(nvRow);
+  monthNav.appendChild(monthTitle);
 
-  const headacheDays = Object.entries(monthData).filter(([, e]) => parseInt(e.morning) > 0 || parseInt(e.afternoon) > 0 || parseInt(e.evening) > 0).length;
-  const medDays = Object.values(monthData).filter(e => e.medication && e.medication !== "未服藥").length;
-  const allPains = Object.values(monthData).flatMap(e => [parseInt(e.morning) || 0, parseInt(e.afternoon) || 0, parseInt(e.evening) || 0].filter(v => v > 0));
-  const avgPain = allPains.length ? (allPains.reduce((a, b) => a + b, 0) / allPains.length).toFixed(1) : "–";
-  const symptomCount = {};
-  Object.values(monthData).forEach(e => (e.symptoms || []).forEach(s => symptomCount[s] = (symptomCount[s] || 0) + 1));
-  const topSymptoms = Object.entries(symptomCount).sort((a, b) => b[1] - a[1]);
-  const dizzyDays = Object.values(monthData).filter(e => e.dizzy).length;
+  const nextBtn=el('button',{className:'back-btn btn',style:'padding:6px 14px;font-size:16px'});nextBtn.textContent='›';
+  nextBtn.onclick=()=>{if(state.month===12){state.year++;state.month=1;}else state.month++;state.selectedDay=1;loadMonth();render();};
+  monthNav.appendChild(nextBtn);
+  calCard.appendChild(monthNav);
 
-  const S = {
-    root: { minHeight: "100vh", background: C.bg, color: C.text, fontFamily: FF, display: "flex", flexDirection: "column", alignItems: "center" },
-    header: { width: "100%", maxWidth: 520, padding: "16px 20px 0", display: "flex", alignItems: "center", justifyContent: "space-between" },
-    main: { width: "100%", maxWidth: 520, padding: "16px 20px 32px", flex: 1 },
-    card: { background: C.card, border: `1px solid ${C.cardBorder}`, borderRadius: 16, padding: 20, marginBottom: 14, boxShadow: "0 2px 14px rgba(74,154,191,0.08)" },
-    navBtn: a => ({ background: a ? "rgba(74,154,191,0.16)" : "transparent", border: "none", color: a ? C.primary : C.textLight, fontSize: 13, padding: "6px 12px", cursor: "pointer", borderRadius: 6, fontFamily: FF }),
-    label: { fontSize: 11, letterSpacing: "0.08em", color: C.textLight, marginBottom: 6, display: "block", textTransform: "uppercase" },
-    input: { background: "rgba(255,255,255,0.85)", border: `1px solid rgba(74,138,176,0.3)`, borderRadius: 8, color: C.text, padding: "9px 12px", fontSize: 15, fontFamily: FF, boxSizing: "border-box" },
-    pill: a => ({ display: "inline-block", padding: "7px 14px", margin: "3px", borderRadius: 20, border: `1px solid ${a ? C.pillActiveBorder : C.pillBorder}`, background: a ? C.pillActive : C.pillBg, color: a ? C.pillActiveText : C.pillText, fontSize: 13, cursor: "pointer", fontFamily: FF }),
-    primaryBtn: { background: `linear-gradient(135deg,${C.primaryLight},${C.primary})`, border: "none", borderRadius: 10, color: "#fff", padding: "12px 24px", fontSize: 15, fontFamily: FF, cursor: "pointer", boxShadow: "0 3px 12px rgba(42,130,170,0.22)" },
-    backBtn: { background: "rgba(255,255,255,0.7)", border: `1px solid rgba(74,138,176,0.25)`, borderRadius: 10, color: C.textMid, padding: "10px 18px", fontSize: 14, fontFamily: FF, cursor: "pointer" },
-  };
+  // 星期列
+  const weekRow=el('div',{style:'display:grid;grid-template-columns:repeat(7,1fr);gap:2px;margin-bottom:4px'});
+  ['日','一','二','三','四','五','六'].forEach(d=>{
+    const c=el('div',{style:'text-align:center;font-size:11px;color:#7aaac8;padding:4px 0'});c.textContent=d;weekRow.appendChild(c);
+  });
+  calCard.appendChild(weekRow);
 
-  // ── PDF 匯出 ──
-  const exportPDF = () => {
-    const rows = Array.from({ length: totalDays }, (_, i) => i + 1).map(day => ({ day, ...(monthData[day] || defaultDayEntry()) }));
-    const html = `<!DOCTYPE html><html lang="zh-Hant"><head><meta charset="UTF-8"/>
-<title>頭痛日記 ${year}年${month}月 - ${user?.name}</title>
+  // 日期格
+  const grid=el('div',{style:'display:grid;grid-template-columns:repeat(7,1fr);gap:3px'});
+  for(let i=0;i<firstDay;i++) grid.appendChild(el('div'));
+  for(let day=1;day<=totalDays;day++){
+    const e=state.monthData[day]||{};
+    const mp=Math.max(parseInt(e.morning)||0,parseInt(e.afternoon)||0,parseInt(e.evening)||0);
+    const has=e.morning||e.afternoon||e.evening||(e.symptoms&&e.symptoms.length>0);
+    const isToday=day===t.day&&state.month===t.month&&state.year===t.year;
+    const isSel=day===state.selectedDay;
+    let bg=has?(mp<=3?'rgba(42,154,106,0.15)':mp<=6?'rgba(224,144,32,0.15)':'rgba(208,64,64,0.15)'):'rgba(255,255,255,0.6)';
+    let border=isSel?'#2a82aa':has?(mp<=3?'#2a9a6a':mp<=6?'#e09020':'#d04040'):'rgba(74,138,176,0.2)';
+    const cell=el('div',{style:`text-align:center;padding:5px 2px;border-radius:10px;background:${bg};border:2px solid ${border};cursor:pointer`});
+    const dayNum=el('div',{style:`font-size:13px;font-weight:${isToday?'bold':'normal'};color:${isSel?'#2a82aa':'#1a3a52'}`});
+    dayNum.textContent=day;cell.appendChild(dayNum);
+    if(has){const pn=el('div',{style:`font-size:10px;color:${mp<=3?'#2a9a6a':mp<=6?'#e09020':'#d04040'};font-weight:bold`});pn.textContent=mp||'✓';cell.appendChild(pn);}
+    if(e.dizzy){const dz=el('div',{style:'font-size:9px;color:#7a5aaa'});dz.textContent='暈';cell.appendChild(dz);}
+    cell.onclick=()=>{state.selectedDay=day;state.view='entry';render();};
+    grid.appendChild(cell);
+  }
+  calCard.appendChild(grid);
+
+  // 圖例
+  const legend=el('div',{style:'display:flex;gap:10px;margin-top:10px;justify-content:center;flex-wrap:wrap'});
+  [['輕微 1-3','#2a9a6a'],['中等 4-6','#e09020'],['嚴重 7-10','#d04040'],['頭暈','#7a5aaa']].forEach(([l,c])=>{
+    const li=el('div',{style:'display:flex;align-items:center;gap:4px;font-size:11px;color:#4a7a9a'});
+    const dot=el('div',{style:`width:10px;height:10px;border-radius:2px;background:${c};opacity:0.7`});
+    li.appendChild(dot);li.appendChild(document.createTextNode(l));legend.appendChild(li);
+  });
+  calCard.appendChild(legend);
+  main.appendChild(calCard);
+
+  // 統計小結
+  const statRow=el('div',{style:'display:flex;gap:8px;margin-bottom:14px'});
+  [{val:stats.headacheDays,label:'頭痛天數',color:'#2a82aa'},{val:stats.avgPain,label:'平均疼痛',color:stats.headacheDays?painColor(parseFloat(stats.avgPain)||0):'#7aaac8'},{val:stats.medDays,label:'用藥天數',color:'#7a5aaa'},{val:stats.dizzyDays,label:'頭暈天數',color:'#5a7aaa'}].forEach(({val,label,color})=>{
+    const box=el('div',{style:'flex:1;background:rgba(255,255,255,0.82);border:1px solid rgba(74,154,191,0.18);border-radius:12px;padding:12px 6px;text-align:center'});
+    const v=el('div',{style:`font-size:22px;font-weight:bold;color:${color}`});v.textContent=val;
+    const l=el('div',{style:'font-size:9px;color:#7aaac8;margin-top:3px'});l.textContent=label;
+    box.appendChild(v);box.appendChild(l);statRow.appendChild(box);
+  });
+  main.appendChild(statRow);
+
+  const addBtn=el('button',{className:'primary-btn btn',style:'width:100%'});
+  addBtn.textContent='＋ 填寫今日紀錄';
+  addBtn.onclick=()=>{state.selectedDay=t.day;state.view='entry';render();};
+  main.appendChild(addBtn);
+}
+
+// ── 單日填寫 ──
+function renderEntry(main){
+  const e=getEntry(state.selectedDay);
+  const totalDays=daysInMonth(state.year,state.month);
+
+  const hdr=el('div',{style:'display:flex;align-items:center;gap:12px;margin-bottom:16px'});
+  const back=el('button',{className:'back-btn btn'});back.textContent='← 返回';
+  back.onclick=()=>{state.view='calendar';render();};
+  hdr.appendChild(back);
+  const info=el('div');
+  info.innerHTML=`<div style="font-size:17px;font-weight:bold;color:#2a82aa">${state.year} 年 ${state.month} 月 ${state.selectedDay} 日</div><div style="font-size:11px;color:#7aaac8">請填寫當日頭痛狀況</div>`;
+  hdr.appendChild(info);
+  main.appendChild(hdr);
+
+  // 疼痛
+  const painCard=el('div',{className:'card'});
+  const painHdr=el('div',{style:'display:flex;justify-content:space-between;align-items:center;margin-bottom:12px'});
+  painHdr.innerHTML='<span style="font-size:15px;font-weight:bold;color:#1a3a52">是否有頭痛</span><span style="font-size:11px;color:#7aaac8">0無痛 ～ 10最嚴重</span>';
+  painCard.appendChild(painHdr);
+  [['morning','早上'],['afternoon','下午'],['evening','晚上']].forEach(([field,label])=>{
+    const row=el('div',{style:'display:flex;align-items:center;gap:10px;margin-bottom:10px'});
+    const lbl=el('div',{style:'width:36px;font-size:13px;color:#4a7a9a;flex-shrink:0'});lbl.textContent=label;
+    const slider=el('input',{type:'range',min:0,max:10,value:parseInt(e[field])||0,style:`flex:1;accent-color:${painColor(e[field])}`});
+    const val=parseInt(e[field])||0;
+    const badge=el('div',{style:`width:28px;height:28px;border-radius:50%;background:${painBg(e[field])};border:2px solid ${val?painColor(e[field]):'rgba(74,138,176,0.2)'};display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:bold;color:${painColor(e[field])};flex-shrink:0`});
+    badge.textContent=val;
+    slider.oninput=ev=>{
+      const updated={...getEntry(state.selectedDay),[field]:ev.target.value};
+      saveDay(state.selectedDay,updated);
+      badge.textContent=ev.target.value;
+      badge.style.color=painColor(ev.target.value);
+      badge.style.borderColor=parseInt(ev.target.value)?painColor(ev.target.value):'rgba(74,138,176,0.2)';
+      badge.style.background=painBg(ev.target.value);
+      slider.style.accentColor=painColor(ev.target.value);
+    };
+    row.appendChild(lbl);row.appendChild(slider);row.appendChild(badge);
+    painCard.appendChild(row);
+  });
+  main.appendChild(painCard);
+
+  // 伴隨症狀
+  const symCard=el('div',{className:'card'});
+  const symTitle=el('div',{style:'font-size:15px;font-weight:bold;color:#1a3a52;margin-bottom:10px'});symTitle.textContent='伴隨症狀';
+  symCard.appendChild(symTitle);
+  const symWrap=el('div');
+  SYMPTOMS.forEach(s=>{
+    const active=(e.symptoms||[]).includes(s);
+    const p=el('button',{className:'pill btn'+(active?' active':'')});
+    p.textContent=s;
+    p.onclick=()=>{
+      const cur=getEntry(state.selectedDay);
+      const list=cur.symptoms||[];
+      const updated={...cur,symptoms:list.includes(s)?list.filter(x=>x!==s):[...list,s]};
+      saveDay(state.selectedDay,updated);
+      p.classList.toggle('active');
+    };
+    symWrap.appendChild(p);
+  });
+  symCard.appendChild(symWrap);
+  main.appendChild(symCard);
+
+  // 持續時間
+  const durCard=el('div',{className:'card'});
+  durCard.innerHTML='<div style="font-size:15px;font-weight:bold;color:#1a3a52;margin-bottom:10px">頭痛持續時間（小時）</div>';
+  const durInp=el('input',{type:'number',className:'inp',min:0,max:72,step:0.5,placeholder:'例：4',style:'width:100%'});
+  durInp.value=e.duration||'';
+  durInp.oninput=ev=>{saveDay(state.selectedDay,{...getEntry(state.selectedDay),duration:ev.target.value});};
+  durCard.appendChild(durInp);
+  main.appendChild(durCard);
+
+  // 其他
+  const otherCard=el('div',{className:'card'});
+  otherCard.innerHTML='<div style="font-size:15px;font-weight:bold;color:#1a3a52;margin-bottom:14px">其他狀況記錄</div>';
+
+  // 藥物
+  const medLbl=el('label',{className:'lbl'});medLbl.textContent='有服用止痛藥';
+  otherCard.appendChild(medLbl);
+  const medWrap=el('div',{style:'margin-bottom:14px'});
+  MEDICATIONS.forEach(m=>{
+    const p=el('button',{className:'pill btn'+(e.medication===m?' active':'')});
+    p.textContent=m;
+    p.onclick=()=>{
+      const updated={...getEntry(state.selectedDay),medication:m};
+      saveDay(state.selectedDay,updated);
+      medWrap.querySelectorAll('.pill').forEach(x=>x.classList.remove('active'));
+      p.classList.add('active');
+      render(); // re-render to show effect buttons
+    };
+    medWrap.appendChild(p);
+  });
+  otherCard.appendChild(medWrap);
+
+  // 藥效
+  if(e.medication&&e.medication!=='未服藥'){
+    const effLbl=el('label',{className:'lbl'});effLbl.textContent='止痛藥效果';
+    otherCard.appendChild(effLbl);
+    const effRow=el('div',{style:'display:flex;gap:8px;margin-bottom:14px'});
+    [['有效','#2a9a6a'],['部分有效','#e09020'],['無效','#d04040']].forEach(([val,col])=>{
+      const active=e.medicationEffect===val;
+      const b=el('button',{className:'btn',style:`flex:1;padding:9px 6px;border-radius:10px;border:1px solid ${active?col:'rgba(74,138,176,0.25)'};background:${active?col+'22':'rgba(255,255,255,0.7)'};color:${active?col:'#5a8aaa'};font-size:13px;cursor:pointer;font-family:inherit`});
+      b.textContent=val;
+      b.onclick=()=>{saveDay(state.selectedDay,{...getEntry(state.selectedDay),medicationEffect:val});render();};
+      effRow.appendChild(b);
+    });
+    otherCard.appendChild(effRow);
+  }
+
+  // 壓力
+  const strLbl=el('label',{className:'lbl'});strLbl.textContent='壓力指數（1–10）';
+  otherCard.appendChild(strLbl);
+  const strRow=el('div',{style:'display:flex;align-items:center;gap:10px;margin-bottom:14px'});
+  const strSlider=el('input',{type:'range',min:0,max:10,value:parseInt(e.stress)||0,style:'flex:1;accent-color:#4a9abf'});
+  const strBadge=el('div',{style:'width:32px;height:32px;border-radius:50%;background:rgba(74,154,191,0.12);border:2px solid #4a9abf;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:bold;color:#2a82aa'});
+  strBadge.textContent=parseInt(e.stress)||0;
+  strSlider.oninput=ev=>{saveDay(state.selectedDay,{...getEntry(state.selectedDay),stress:ev.target.value});strBadge.textContent=ev.target.value;};
+  strRow.appendChild(strSlider);strRow.appendChild(strBadge);
+  otherCard.appendChild(strRow);
+
+  // 運動
+  const exLbl=el('label',{className:'lbl'});exLbl.textContent='運動項目';
+  otherCard.appendChild(exLbl);
+  const exInp=el('input',{type:'text',className:'inp',placeholder:'例：慢跑30分、瑜伽、無',style:'width:100%'});
+  exInp.value=e.exercise||'';
+  exInp.oninput=ev=>{saveDay(state.selectedDay,{...getEntry(state.selectedDay),exercise:ev.target.value});};
+  otherCard.appendChild(exInp);
+  main.appendChild(otherCard);
+
+  // ── 頭暈欄位 ──
+  const dizCard=el('div',{className:'card',style:`border:1px solid ${e.dizzy?'rgba(122,90,170,0.4)':'rgba(74,154,191,0.18)'};background:${e.dizzy?'rgba(122,90,170,0.06)':'rgba(255,255,255,0.82)'}`});
+  const dizTitle=el('div',{style:'font-size:15px;font-weight:bold;color:#1a3a52;margin-bottom:14px'});dizTitle.textContent='是否會頭暈';
+  dizCard.appendChild(dizTitle);
+
+  const ynRow=el('div',{style:'display:flex;gap:12px;margin-bottom:'+(e.dizzy?'14px':'0')});
+  [['是',true],['否',false]].forEach(([label,val])=>{
+    const active=e.dizzy===val;
+    const col=val?'#7a5aaa':'#2a9a6a';
+    const b=el('button',{className:'btn',style:`flex:1;padding:12px;border-radius:12px;border:2px solid ${active?col:'rgba(74,138,176,0.25)'};background:${active?(val?'rgba(122,90,170,0.12)':'rgba(42,154,106,0.1)'):'rgba(255,255,255,0.7)'};color:${active?col:'#5a8aaa'};font-size:16px;font-weight:bold;cursor:pointer;font-family:inherit`});
+    b.textContent=label;
+    b.onclick=()=>{
+      const updated={...getEntry(state.selectedDay),dizzy:val};
+      if(!val)updated.dizzyLevel='';
+      saveDay(state.selectedDay,updated);render();
+    };
+    ynRow.appendChild(b);
+  });
+  dizCard.appendChild(ynRow);
+
+  if(e.dizzy){
+    const levLbl=el('label',{className:'lbl',style:'color:#9a7acc'});levLbl.textContent='嚴重程度';
+    dizCard.appendChild(levLbl);
+    const levRow=el('div',{style:'display:flex;gap:8px'});
+    const cols=['#2a9a6a','#e09020','#d04040'];
+    DIZ_LEVELS.forEach((lv,i)=>{
+      const active=e.dizzyLevel===lv;
+      const col=cols[i];
+      const b=el('button',{className:'btn',style:`flex:1;padding:10px 6px;border-radius:10px;border:2px solid ${active?col:'rgba(74,138,176,0.25)'};background:${active?col+'22':'rgba(255,255,255,0.7)'};color:${active?col:'#5a8aaa'};font-size:14px;font-weight:${active?'bold':'normal'};cursor:pointer;font-family:inherit`});
+      b.textContent=lv;
+      b.onclick=()=>{saveDay(state.selectedDay,{...getEntry(state.selectedDay),dizzyLevel:lv});render();};
+      levRow.appendChild(b);
+    });
+    dizCard.appendChild(levRow);
+  }
+  main.appendChild(dizCard);
+
+  // 前後天
+  const navRow=el('div',{style:'display:flex;gap:10px'});
+  const prevDay=el('button',{className:'back-btn btn',style:'flex:1'});
+  prevDay.textContent='‹ 前一天';prevDay.disabled=state.selectedDay<=1;
+  prevDay.onclick=()=>{state.selectedDay--;render();};
+  const nextDay=el('button',{className:'primary-btn btn',style:'flex:1'});
+  nextDay.textContent='後一天 ›';nextDay.disabled=state.selectedDay>=totalDays;
+  nextDay.onclick=()=>{state.selectedDay++;render();};
+  navRow.appendChild(prevDay);navRow.appendChild(nextDay);
+  main.appendChild(navRow);
+}
+
+// ── 統計 ──
+function renderStats(main){
+  const stats=calcStats();
+
+  const hdr=el('div',{style:'display:flex;justify-content:space-between;align-items:center;margin-bottom:16px'});
+  const title=el('div',{style:'font-size:18px;font-weight:bold;color:#2a82aa'});
+  title.textContent=`${state.year} 年 ${state.month} 月 統計`;
+  const pdfBtn=el('button',{className:'btn',style:'background:linear-gradient(135deg,#3aaa7a,#2a8a5a);border:none;border-radius:8px;color:#fff;padding:9px 14px;font-size:13px;cursor:pointer;font-family:inherit'});
+  pdfBtn.textContent='🖨️ 匯出PDF';pdfBtn.onclick=exportPDF;
+  hdr.appendChild(title);hdr.appendChild(pdfBtn);
+  main.appendChild(hdr);
+
+  // 數字
+  const statRow=el('div',{style:'display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap'});
+  [{val:stats.headacheDays,label:'頭痛天數',color:'#2a82aa'},{val:stats.avgPain,label:'平均疼痛',color:stats.headacheDays?painColor(parseFloat(stats.avgPain)||0):'#7aaac8'},{val:stats.medDays,label:'用藥天數',color:'#7a5aaa'},{val:stats.dizzyDays,label:'頭暈天數',color:'#5a7aaa'}].forEach(({val,label,color})=>{
+    const box=el('div',{style:'flex:1 1 70px;background:rgba(255,255,255,0.82);border:1px solid rgba(74,154,191,0.18);border-radius:12px;padding:14px 8px;text-align:center'});
+    const v=el('div',{style:`font-size:24px;font-weight:bold;color:${color}`});v.textContent=val;
+    const l=el('div',{style:'font-size:10px;color:#7aaac8;margin-top:3px'});l.textContent=label;
+    box.appendChild(v);box.appendChild(l);statRow.appendChild(box);
+  });
+  main.appendChild(statRow);
+
+  // 症狀
+  if(stats.topSymptoms.length>0){
+    const symCard=el('div',{className:'card'});
+    const st=el('div',{style:'font-size:14px;font-weight:bold;color:#1a3a52;margin-bottom:12px'});st.textContent='常見伴隨症狀';
+    symCard.appendChild(st);
+    const max=stats.topSymptoms[0][1]||1;
+    stats.topSymptoms.forEach(([s,c])=>{
+      const row=el('div',{style:'margin-bottom:10px'});
+      const top=el('div',{style:'display:flex;justify-content:space-between;margin-bottom:4px'});
+      const sl=el('span',{style:'font-size:13px;color:#1a3a52'});sl.textContent=s;
+      const sc=el('span',{style:'font-size:12px;color:#7aaac8'});sc.textContent=c+' 次';
+      top.appendChild(sl);top.appendChild(sc);
+      const bar=el('div',{style:'height:4px;background:rgba(74,138,176,0.12);border-radius:2px'});
+      const fill=el('div',{style:`height:100%;width:${(c/max)*100}%;background:#4a9abf;border-radius:2px`});
+      bar.appendChild(fill);row.appendChild(top);row.appendChild(bar);symCard.appendChild(row);
+    });
+    main.appendChild(symCard);
+  }
+
+  // 每日明細
+  const entries=Object.entries(state.monthData).filter(([,e])=>e.morning||e.afternoon||e.evening).sort((a,b)=>parseInt(a[0])-parseInt(b[0]));
+  if(entries.length>0){
+    const detCard=el('div',{className:'card'});
+    const dt=el('div',{style:'font-size:14px;font-weight:bold;color:#1a3a52;margin-bottom:12px'});dt.textContent='每日紀錄';
+    detCard.appendChild(dt);
+    entries.forEach(([day,e])=>{
+      const mp=Math.max(parseInt(e.morning)||0,parseInt(e.afternoon)||0,parseInt(e.evening)||0);
+      const col=painColor(mp);
+      const row=el('div',{style:'display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid rgba(74,138,176,0.08);cursor:pointer'});
+      const badge=el('div',{style:`width:36px;height:36px;border-radius:50%;background:${col}20;border:2px solid ${col};display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:bold;color:${col};flex-shrink:0`});
+      badge.textContent=day;
+      const info=el('div',{style:'flex:1'});
+      const l1=el('div',{style:'font-size:13px;color:#1a3a52'});
+      l1.textContent=`早${e.morning||0} · 午${e.afternoon||0} · 晚${e.evening||0}${e.duration?' · '+e.duration+'小時':''}${e.dizzy?' · 頭暈'+(e.dizzyLevel?'('+e.dizzyLevel+')':''):''}`;
+      const l2=el('div',{style:'font-size:11px;color:#7aaac8;margin-top:2px'});
+      l2.textContent=(e.symptoms||[]).slice(0,3).join('、')||'無症狀';
+      info.appendChild(l1);info.appendChild(l2);
+      const arr=el('span',{style:'color:#7aaac8'});arr.textContent='›';
+      row.appendChild(badge);row.appendChild(info);row.appendChild(arr);
+      row.onclick=()=>{state.selectedDay=parseInt(day);state.view='entry';render();};
+      detCard.appendChild(row);
+    });
+    main.appendChild(detCard);
+  }
+
+  if(stats.headacheDays===0){
+    const empty=el('div',{className:'card',style:'text-align:center;padding:32px'});
+    empty.innerHTML='<p style="color:#7aaac8;margin:0">本月尚無頭痛紀錄。</p>';
+    main.appendChild(empty);
+  }
+}
+
+// ── 統計計算 ──
+function calcStats(){
+  const headacheDays=Object.entries(state.monthData).filter(([,e])=>parseInt(e.morning)>0||parseInt(e.afternoon)>0||parseInt(e.evening)>0).length;
+  const medDays=Object.values(state.monthData).filter(e=>e.medication&&e.medication!=='未服藥').length;
+  const dizzyDays=Object.values(state.monthData).filter(e=>e.dizzy).length;
+  const allPains=Object.values(state.monthData).flatMap(e=>[parseInt(e.morning)||0,parseInt(e.afternoon)||0,parseInt(e.evening)||0].filter(v=>v>0));
+  const avgPain=allPains.length?(allPains.reduce((a,b)=>a+b,0)/allPains.length).toFixed(1):'–';
+  const symptomCount={};
+  Object.values(state.monthData).forEach(e=>(e.symptoms||[]).forEach(s=>symptomCount[s]=(symptomCount[s]||0)+1));
+  const topSymptoms=Object.entries(symptomCount).sort((a,b)=>b[1]-a[1]);
+  return{headacheDays,medDays,dizzyDays,allPains,avgPain,topSymptoms};
+}
+
+// ── PDF ──
+function exportPDF(){
+  const totalDays=daysInMonth(state.year,state.month);
+  const stats=calcStats();
+  const rows=Array.from({length:totalDays},(_,i)=>i+1).map(day=>({day,...(state.monthData[day]||defEntry())}));
+  const pc=v=>{const n=parseInt(v);if(!n)return'p0';if(n<=3)return'pl';if(n<=6)return'pm';return'ph'};
+  const html=`<!DOCTYPE html><html lang="zh-Hant"><head><meta charset="UTF-8"/>
+<title>頭痛日記 ${state.year}年${state.month}月</title>
 <style>*{box-sizing:border-box;margin:0;padding:0}body{font-family:'Microsoft JhengHei','PingFang TC',sans-serif;font-size:11px;color:#1a3a52}
 @page{size:A4 landscape;margin:10mm 8mm}
-.header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px;padding-bottom:6px;border-bottom:2px solid #2a82aa}
-.title{font-size:18px;font-weight:bold;color:#2a82aa}.subtitle{font-size:10px;color:#7aaac8;margin-top:2px}
+.hdr{display:flex;justify-content:space-between;margin-bottom:8px;padding-bottom:6px;border-bottom:2px solid #2a82aa}
+.title{font-size:18px;font-weight:bold;color:#2a82aa}.sub{font-size:10px;color:#7aaac8;margin-top:2px}
 .meta{text-align:right;font-size:11px;color:#4a7a9a;line-height:1.8}
-.summary{display:flex;gap:12px;margin-bottom:8px}
+.sum{display:flex;gap:12px;margin-bottom:8px}
 .stat{background:#e8f5fb;border:1px solid #b0d8f0;border-radius:6px;padding:5px 12px;text-align:center}
-.stat-val{font-size:16px;font-weight:bold;color:#2a82aa}.stat-lbl{font-size:9px;color:#7aaac8}
+.sv{font-size:16px;font-weight:bold;color:#2a82aa}.sl{font-size:9px;color:#7aaac8}
 table{width:100%;border-collapse:collapse}
 th{background:#2a82aa;color:#fff;padding:5px 3px;text-align:center;font-size:10px;font-weight:bold;border:1px solid #1a6a8a}
 td{padding:4px 3px;text-align:center;border:1px solid #c0d8e8;font-size:10px;vertical-align:middle}
 tr:nth-child(even) td{background:#f0f8fd}
-.day-col{font-weight:bold;color:#2a82aa;background:#e8f5fb!important;width:26px}
+.dc{font-weight:bold;color:#2a82aa;background:#e8f5fb!important;width:26px}
 .p0{color:#aaa}.pl{color:#2a9a6a;font-weight:bold}.pm{color:#e09020;font-weight:bold}.ph{color:#d04040;font-weight:bold}
-.check{color:#2a82aa}.footer{margin-top:8px;font-size:9px;color:#7aaac8;text-align:center;border-top:1px solid #c0d8e8;padding-top:6px}
+.ck{color:#2a82aa}.ft{margin-top:8px;font-size:9px;color:#7aaac8;text-align:center;border-top:1px solid #c0d8e8;padding-top:6px}
 </style></head><body>
-<div class="header">
-  <div><div class="title">🧠 頭痛日記</div><div class="subtitle">內容根據台灣頭痛學會之建議制定</div></div>
-  <div class="meta"><div><b>${user?.name} · ${year}年${month}月</b></div>${nextVisit ? `<div>下次回診：${nextVisit}</div>` : ""}<div>列印：${new Date().toLocaleDateString("zh-TW")}</div></div>
+<div class="hdr">
+<div><div class="title">🧠 頭痛日記</div><div class="sub">內容根據台灣頭痛學會之建議制定</div></div>
+<div class="meta"><b>${state.user?.name} · ${state.year}年${state.month}月</b>${state.nextVisit?'<br>下次回診：'+state.nextVisit:''}<br>列印：${new Date().toLocaleDateString('zh-TW')}</div>
 </div>
-<div class="summary">
-  <div class="stat"><div class="stat-val">${headacheDays}</div><div class="stat-lbl">頭痛天數</div></div>
-  <div class="stat"><div class="stat-val">${avgPain}</div><div class="stat-lbl">平均疼痛</div></div>
-  <div class="stat"><div class="stat-val">${medDays}</div><div class="stat-lbl">用藥天數</div></div>
-  <div class="stat"><div class="stat-val">${dizzyDays}</div><div class="stat-lbl">頭暈天數</div></div>
-  <div class="stat"><div class="stat-val">${allPains.length ? Math.max(...allPains) : "–"}</div><div class="stat-lbl">最高疼痛</div></div>
+<div class="sum">
+<div class="stat"><div class="sv">${stats.headacheDays}</div><div class="sl">頭痛天數</div></div>
+<div class="stat"><div class="sv">${stats.avgPain}</div><div class="sl">平均疼痛</div></div>
+<div class="stat"><div class="sv">${stats.medDays}</div><div class="sl">用藥天數</div></div>
+<div class="stat"><div class="sv">${stats.dizzyDays}</div><div class="sl">頭暈天數</div></div>
+<div class="stat"><div class="sv">${stats.allPains.length?Math.max(...stats.allPains):'–'}</div><div class="sl">最高疼痛</div></div>
 </div>
-<table><thead><tr>
-  <th>日</th><th>早上</th><th>下午</th><th>晚上</th>
-  <th>噁心嘔吐</th><th>怕光</th><th>怕吵</th><th>搏動性</th><th>單側</th><th>活動加劇</th>
-  <th>持續(時)</th><th>止痛藥</th><th>藥效</th><th>頭暈</th><th>壓力</th><th>運動項目</th>
-</tr></thead><tbody>
-${rows.map(({ day, morning, afternoon, evening, symptoms, duration, medication, medicationEffect, dizzy, dizzyLevel, stress, exercise }) => {
-  const pc = v => { const n = parseInt(v); if (!n) return "p0"; if (n <= 3) return "pl"; if (n <= 6) return "pm"; return "ph"; };
-  const sym = symptoms || [];
-  return `<tr>
-    <td class="day-col">${day}</td>
-    <td class="${pc(morning)}">${morning || "0"}</td>
-    <td class="${pc(afternoon)}">${afternoon || "0"}</td>
-    <td class="${pc(evening)}">${evening || "0"}</td>
-    <td>${sym.includes("噁心或嘔吐") ? '<span class="check">✓</span>' : ""}</td>
-    <td>${sym.includes("怕光") ? '<span class="check">✓</span>' : ""}</td>
-    <td>${sym.includes("怕吵") ? '<span class="check">✓</span>' : ""}</td>
-    <td>${sym.includes("搏動性疼痛") ? '<span class="check">✓</span>' : ""}</td>
-    <td>${sym.includes("單側頭痛") ? '<span class="check">✓</span>' : ""}</td>
-    <td>${sym.includes("活動使頭痛加劇") ? '<span class="check">✓</span>' : ""}</td>
-    <td>${duration || ""}</td>
-    <td style="font-size:9px">${medication !== "未服藥" ? medication : ""}</td>
-    <td>${medicationEffect || ""}</td>
-    <td>${dizzy ? (dizzyLevel || "是") : ""}</td>
-    <td>${stress || ""}</td>
-    <td style="font-size:9px;text-align:left;padding-left:4px">${exercise || ""}</td>
-  </tr>`;
-}).join("")}
-</tbody></table>
-<div class="footer">僅供個人記錄使用，不可取代求醫之需要，亦不能作為自我診斷或選擇治療的依據。</div>
+<table><thead><tr><th>日</th><th>早上</th><th>下午</th><th>晚上</th><th>噁心嘔吐</th><th>怕光</th><th>怕吵</th><th>搏動性</th><th>單側</th><th>活動加劇</th><th>持續(時)</th><th>止痛藥</th><th>藥效</th><th>頭暈</th><th>壓力</th><th>運動項目</th></tr></thead>
+<tbody>${rows.map(({day,morning,afternoon,evening,symptoms,duration,medication,medicationEffect,dizzy,dizzyLevel,stress,exercise})=>{
+const sym=symptoms||[];
+return`<tr><td class="dc">${day}</td><td class="${pc(morning)}">${morning||'0'}</td><td class="${pc(afternoon)}">${afternoon||'0'}</td><td class="${pc(evening)}">${evening||'0'}</td><td>${sym.includes('噁心或嘔吐')?'<span class="ck">✓</span>':''}</td><td>${sym.includes('怕光')?'<span class="ck">✓</span>':''}</td><td>${sym.includes('怕吵')?'<span class="ck">✓</span>':''}</td><td>${sym.includes('搏動性疼痛')?'<span class="ck">✓</span>':''}</td><td>${sym.includes('單側頭痛')?'<span class="ck">✓</span>':''}</td><td>${sym.includes('活動使頭痛加劇')?'<span class="ck">✓</span>':''}</td><td>${duration||''}</td><td style="font-size:9px">${medication!=='未服藥'?medication:''}</td><td>${medicationEffect||''}</td><td>${dizzy?(dizzyLevel||'是'):''}</td><td>${stress||''}</td><td style="font-size:9px;text-align:left;padding-left:4px">${exercise||''}</td></tr>`;
+}).join('')}</tbody></table>
+<div class="ft">僅供個人記錄使用，不可取代求醫之需要，亦不能作為自我診斷或選擇治療的依據。</div>
 </body></html>`;
-    const win = window.open("", "_blank");
-    win.document.write(html);
-    win.document.close();
-    setTimeout(() => win.print(), 500);
-  };
-
-  // ── 月曆 ──
-  const CalendarView = () => (
-    <div>
-      <div style={{ ...S.card, padding: 16 }}>
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
-          <button onClick={prevMonth} style={{ ...S.backBtn, padding: "6px 14px", fontSize: 16 }}>‹</button>
-          <div style={{ textAlign: "center" }}>
-            <div style={{ fontSize: 18, fontWeight: "bold", color: C.primary }}>{year} 年 {month} 月</div>
-            <div style={{ fontSize: 11, color: C.textLight, marginTop: 2 }}>
-              下次回診：
-              <input type="date" value={nextVisit} onChange={e => saveNextVisit(e.target.value)}
-                style={{ ...S.input, display: "inline", width: "auto", padding: "2px 8px", fontSize: 12, marginLeft: 6 }} />
-            </div>
-          </div>
-          <button onClick={nextMonth} style={{ ...S.backBtn, padding: "6px 14px", fontSize: 16 }}>›</button>
-        </div>
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(7,1fr)", gap: 2, marginBottom: 4 }}>
-          {["日","一","二","三","四","五","六"].map(d => (
-            <div key={d} style={{ textAlign: "center", fontSize: 11, color: C.textLight, padding: "4px 0" }}>{d}</div>
-          ))}
-        </div>
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(7,1fr)", gap: 3 }}>
-          {Array.from({ length: firstDay }).map((_, i) => <div key={`e${i}`} />)}
-          {Array.from({ length: totalDays }, (_, i) => i + 1).map(day => {
-            const mp = maxPain(day);
-            const has = hasData(day);
-            const isToday = day === t.day && month === t.month && year === t.year;
-            const isSelected = day === selectedDay;
-            const e = monthData[day] || {};
-            const bg = has ? (mp <= 3 ? "rgba(42,154,106,0.15)" : mp <= 6 ? "rgba(224,144,32,0.15)" : "rgba(208,64,64,0.15)") : "rgba(255,255,255,0.6)";
-            const border = isSelected ? C.primary : has ? (mp <= 3 ? C.green : mp <= 6 ? C.orange : C.red) : "rgba(74,138,176,0.2)";
-            return (
-              <div key={day} onClick={() => { setSelectedDay(day); setView("entry"); }}
-                style={{ textAlign: "center", padding: "5px 2px", borderRadius: 10, background: bg, border: `2px solid ${border}`, cursor: "pointer" }}>
-                <div style={{ fontSize: 13, fontWeight: isToday ? "bold" : "normal", color: isSelected ? C.primary : C.text }}>{day}</div>
-                {has && <div style={{ fontSize: 10, color: mp <= 3 ? C.green : mp <= 6 ? C.orange : C.red, fontWeight: "bold" }}>{mp || "✓"}</div>}
-                {e.dizzy && <div style={{ fontSize: 9, color: "#7a5aaa" }}>暈</div>}
-              </div>
-            );
-          })}
-        </div>
-        <div style={{ display: "flex", gap: 10, marginTop: 10, justifyContent: "center", flexWrap: "wrap" }}>
-          {[["輕微 1-3", C.green], ["中等 4-6", C.orange], ["嚴重 7-10", C.red], ["頭暈", "#7a5aaa"]].map(([l, c]) => (
-            <div key={l} style={{ display: "flex", alignItems: "center", gap: 4, fontSize: 11, color: C.textMid }}>
-              <div style={{ width: 10, height: 10, borderRadius: 2, background: c, opacity: 0.7 }} />{l}
-            </div>
-          ))}
-        </div>
-      </div>
-      <div style={{ display: "flex", gap: 10, marginBottom: 14 }}>
-        {[
-          { val: headacheDays, label: "頭痛天數", color: C.primary },
-          { val: avgPain, label: "平均疼痛", color: headacheDays ? painColor(parseFloat(avgPain)) : C.textLight },
-          { val: medDays, label: "用藥天數", color: "#7a5aaa" },
-          { val: dizzyDays, label: "頭暈天數", color: "#5a7aaa" },
-        ].map(({ val, label, color }) => (
-          <div key={label} style={{ flex: 1, background: C.card, border: `1px solid ${C.cardBorder}`, borderRadius: 12, padding: "12px 6px", textAlign: "center" }}>
-            <div style={{ fontSize: 22, fontWeight: "bold", color }}>{val}</div>
-            <div style={{ fontSize: 9, color: C.textLight, marginTop: 3 }}>{label}</div>
-          </div>
-        ))}
-      </div>
-      <button style={{ ...S.primaryBtn, width: "100%" }} onClick={() => { setSelectedDay(t.day); setView("entry"); }}>
-        ＋ 填寫今日紀錄
-      </button>
-    </div>
-  );
-
-  // ── 單日填寫 ──
-  const EntryView = () => {
-    const e = currentEntry;
-    return (
-      <div>
-        <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 16 }}>
-          <button style={S.backBtn} onClick={() => setView("calendar")}>← 返回</button>
-          <div>
-            <div style={{ fontSize: 17, fontWeight: "bold", color: C.primary }}>{year} 年 {month} 月 {selectedDay} 日</div>
-            <div style={{ fontSize: 11, color: C.textLight }}>請填寫當日頭痛狀況</div>
-          </div>
-        </div>
-
-        {/* 疼痛 */}
-        <div style={S.card}>
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
-            <span style={{ fontSize: 15, fontWeight: "bold", color: C.text }}>是否有頭痛</span>
-            <span style={{ fontSize: 11, color: C.textLight }}>0無痛 ～ 10最嚴重</span>
-          </div>
-          {[["morning", "早上"], ["afternoon", "下午"], ["evening", "晚上"]].map(([field, label]) => (
-            <div key={field} style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 10 }}>
-              <div style={{ width: 36, fontSize: 13, color: C.textMid, flexShrink: 0 }}>{label}</div>
-              <input type="range" min={0} max={10} value={parseInt(e[field]) || 0}
-                onChange={ev => updateEntry(field, ev.target.value)}
-                style={{ flex: 1, accentColor: painColor(e[field]) }} />
-              <div style={{ width: 28, height: 28, borderRadius: "50%", background: parseInt(e[field]) ? painColor(e[field]) + "22" : "rgba(74,138,176,0.08)", border: `2px solid ${parseInt(e[field]) ? painColor(e[field]) : "rgba(74,138,176,0.2)"}`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 12, fontWeight: "bold", color: painColor(e[field]), flexShrink: 0 }}>
-                {e[field] || 0}
-              </div>
-            </div>
-          ))}
-        </div>
-
-        {/* 伴隨症狀 */}
-        <div style={S.card}>
-          <div style={{ fontSize: 15, fontWeight: "bold", color: C.text, marginBottom: 10 }}>伴隨症狀</div>
-          <div>{SYMPTOMS.map(s => <button key={s} style={S.pill((e.symptoms || []).includes(s))} onClick={() => toggleSymptom(s)}>{s}</button>)}</div>
-        </div>
-
-        {/* 持續時間 */}
-        <div style={S.card}>
-          <div style={{ fontSize: 15, fontWeight: "bold", color: C.text, marginBottom: 10 }}>頭痛持續時間（小時）</div>
-          <input type="number" min={0} max={72} step={0.5} placeholder="例：4" value={e.duration}
-            onChange={ev => updateEntry("duration", ev.target.value)}
-            style={{ ...S.input, width: "100%" }} />
-        </div>
-
-        {/* 其他 */}
-        <div style={S.card}>
-          <div style={{ fontSize: 15, fontWeight: "bold", color: C.text, marginBottom: 14 }}>其他狀況記錄</div>
-          <div style={{ marginBottom: 14 }}>
-            <label style={S.label}>有服用止痛藥</label>
-            <div style={{ display: "flex", flexWrap: "wrap" }}>
-              {MEDICATIONS.map(m => <button key={m} style={S.pill(e.medication === m)} onClick={() => updateEntry("medication", m)}>{m}</button>)}
-            </div>
-          </div>
-          {e.medication !== "未服藥" && (
-            <div style={{ marginBottom: 14 }}>
-              <label style={S.label}>止痛藥效果</label>
-              <div style={{ display: "flex", gap: 8 }}>
-                {[["有效", C.green], ["部分有效", C.orange], ["無效", C.red]].map(([val, col]) => (
-                  <button key={val} onClick={() => updateEntry("medicationEffect", val)}
-                    style={{ flex: 1, padding: "9px 6px", borderRadius: 10, border: `1px solid ${e.medicationEffect === val ? col : C.pillBorder}`, background: e.medicationEffect === val ? col + "22" : C.pillBg, color: e.medicationEffect === val ? col : C.pillText, fontSize: 13, cursor: "pointer", fontFamily: FF, textAlign: "center" }}>
-                    {val}
-                  </button>
-                ))}
-              </div>
-            </div>
-          )}
-          <div style={{ marginBottom: 14 }}>
-            <label style={S.label}>壓力指數（1–10）</label>
-            <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-              <input type="range" min={0} max={10} value={parseInt(e.stress) || 0}
-                onChange={ev => updateEntry("stress", ev.target.value)}
-                style={{ flex: 1, accentColor: C.primary }} />
-              <div style={{ width: 32, height: 32, borderRadius: "50%", background: "rgba(74,154,191,0.12)", border: `2px solid ${C.primaryLight}`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 13, fontWeight: "bold", color: C.primary }}>
-                {e.stress || 0}
-              </div>
-            </div>
-          </div>
-          <div>
-            <label style={S.label}>運動項目</label>
-            <input type="text" placeholder="例：慢跑30分、瑜伽、無" value={e.exercise}
-              onChange={ev => updateEntry("exercise", ev.target.value)}
-              style={{ ...S.input, width: "100%" }} />
-          </div>
-        </div>
-
-        {/* ── 頭暈欄位 ── */}
-        <div style={{ ...S.card, border: `1px solid ${e.dizzy ? "rgba(122,90,170,0.4)" : C.cardBorder}`, background: e.dizzy ? "rgba(122,90,170,0.06)" : C.card }}>
-          <div style={{ fontSize: 15, fontWeight: "bold", color: C.text, marginBottom: 14 }}>是否會頭暈</div>
-          <div style={{ display: "flex", gap: 12, marginBottom: e.dizzy ? 14 : 0 }}>
-            {[["是", true], ["否", false]].map(([label, val]) => (
-              <button key={label} onClick={() => { updateEntry("dizzy", val); if (!val) updateEntry("dizzyLevel", ""); }}
-                style={{ flex: 1, padding: "12px", borderRadius: 12, border: `2px solid ${e.dizzy === val ? (val ? "#7a5aaa" : C.green) : C.pillBorder}`, background: e.dizzy === val ? (val ? "rgba(122,90,170,0.12)" : "rgba(42,154,106,0.1)") : C.pillBg, color: e.dizzy === val ? (val ? "#7a5aaa" : C.green) : C.pillText, fontSize: 16, fontWeight: "bold", cursor: "pointer", fontFamily: FF, textAlign: "center" }}>
-                {label}
-              </button>
-            ))}
-          </div>
-          {e.dizzy && (
-            <div>
-              <label style={{ ...S.label, color: "#9a7acc" }}>嚴重程度</label>
-              <div style={{ display: "flex", gap: 8 }}>
-                {DIZZINESS_LEVELS.map((lv, i) => {
-                  const cols = [C.green, C.orange, C.red];
-                  const col = cols[i];
-                  return (
-                    <button key={lv} onClick={() => updateEntry("dizzyLevel", lv)}
-                      style={{ flex: 1, padding: "10px 6px", borderRadius: 10, border: `2px solid ${e.dizzyLevel === lv ? col : C.pillBorder}`, background: e.dizzyLevel === lv ? col + "22" : C.pillBg, color: e.dizzyLevel === lv ? col : C.pillText, fontSize: 14, fontWeight: e.dizzyLevel === lv ? "bold" : "normal", cursor: "pointer", fontFamily: FF, textAlign: "center" }}>
-                      {lv}
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-          )}
-        </div>
-
-        <div style={{ display: "flex", gap: 10 }}>
-          <button style={{ ...S.backBtn, flex: 1 }} disabled={selectedDay <= 1} onClick={() => setSelectedDay(d => d - 1)}>‹ 前一天</button>
-          <button style={{ ...S.primaryBtn, flex: 1 }} disabled={selectedDay >= totalDays} onClick={() => setSelectedDay(d => d + 1)}>後一天 ›</button>
-        </div>
-      </div>
-    );
-  };
-
-  // ── 統計 ──
-  const StatsView = () => (
-    <div>
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
-        <div style={{ fontSize: 18, fontWeight: "bold", color: C.primary }}>{year} 年 {month} 月 統計</div>
-        <button onClick={exportPDF} style={{ background: "linear-gradient(135deg,#3aaa7a,#2a8a5a)", border: "none", borderRadius: 8, color: "#fff", padding: "9px 14px", fontSize: 13, fontFamily: FF, cursor: "pointer" }}>
-          🖨️ 匯出PDF
-        </button>
-      </div>
-      <div style={{ display: "flex", gap: 8, marginBottom: 14, flexWrap: "wrap" }}>
-        {[
-          { val: headacheDays, label: "頭痛天數", color: C.primary },
-          { val: avgPain, label: "平均疼痛", color: headacheDays ? painColor(parseFloat(avgPain)) : C.textLight },
-          { val: medDays, label: "用藥天數", color: "#7a5aaa" },
-          { val: dizzyDays, label: "頭暈天數", color: "#5a7aaa" },
-        ].map(({ val, label, color }) => (
-          <div key={label} style={{ flex: "1 1 80px", background: C.card, border: `1px solid ${C.cardBorder}`, borderRadius: 12, padding: "14px 8px", textAlign: "center" }}>
-            <div style={{ fontSize: 24, fontWeight: "bold", color }}>{val}</div>
-            <div style={{ fontSize: 10, color: C.textLight, marginTop: 3 }}>{label}</div>
-          </div>
-        ))}
-      </div>
-      {topSymptoms.length > 0 && (
-        <div style={S.card}>
-          <div style={{ fontSize: 14, fontWeight: "bold", color: C.text, marginBottom: 12 }}>常見伴隨症狀</div>
-          {topSymptoms.map(([s, c]) => (
-            <div key={s} style={{ marginBottom: 10 }}>
-              <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 4 }}>
-                <span style={{ fontSize: 13, color: C.text }}>{s}</span>
-                <span style={{ fontSize: 12, color: C.textLight }}>{c} 次</span>
-              </div>
-              <div style={{ height: 4, background: "rgba(74,138,176,0.12)", borderRadius: 2 }}>
-                <div style={{ height: "100%", width: `${(c / (topSymptoms[0]?.[1] || 1)) * 100}%`, background: C.primaryLight, borderRadius: 2 }} />
-              </div>
-            </div>
-          ))}
-        </div>
-      )}
-      {Object.entries(monthData).filter(([, e]) => e.morning || e.afternoon || e.evening).length > 0 && (
-        <div style={S.card}>
-          <div style={{ fontSize: 14, fontWeight: "bold", color: C.text, marginBottom: 12 }}>每日紀錄</div>
-          {Object.entries(monthData).filter(([, e]) => e.morning || e.afternoon || e.evening).sort((a, b) => parseInt(a[0]) - parseInt(b[0])).map(([day, e]) => (
-            <div key={day} style={{ display: "flex", alignItems: "center", gap: 10, padding: "10px 0", borderBottom: "1px solid rgba(74,138,176,0.08)", cursor: "pointer" }}
-              onClick={() => { setSelectedDay(parseInt(day)); setView("entry"); }}>
-              <div style={{ width: 36, height: 36, borderRadius: "50%", background: painColor(maxPain(parseInt(day))) + "20", border: `2px solid ${painColor(maxPain(parseInt(day)))}`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 13, fontWeight: "bold", color: painColor(maxPain(parseInt(day))), flexShrink: 0 }}>{day}</div>
-              <div style={{ flex: 1 }}>
-                <div style={{ fontSize: 13, color: C.text }}>
-                  早{e.morning || 0} · 午{e.afternoon || 0} · 晚{e.evening || 0}
-                  {e.duration ? ` · ${e.duration}小時` : ""}
-                  {e.dizzy ? ` · 頭暈${e.dizzyLevel ? "（" + e.dizzyLevel + "）" : ""}` : ""}
-                </div>
-                <div style={{ fontSize: 11, color: C.textLight, marginTop: 2 }}>{(e.symptoms || []).slice(0, 3).join("、") || "無症狀"}</div>
-              </div>
-              <span style={{ color: C.textLight }}>›</span>
-            </div>
-          ))}
-        </div>
-      )}
-      {headacheDays === 0 && <div style={{ ...S.card, textAlign: "center", padding: 32 }}><p style={{ color: C.textLight, margin: 0 }}>本月尚無頭痛紀錄。</p></div>}
-    </div>
-  );
-
-  if (!user) return <AuthScreen onLogin={handleLogin} />;
-
-  return (
-    <div style={S.root}>
-      <div style={S.header}>
-        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-          <span style={{ fontSize: 14, color: C.primary, fontWeight: "bold" }}>🧠 頭痛日記</span>
-          <span style={{ fontSize: 12, color: C.textLight }}>· {user.name}</span>
-        </div>
-        <div style={{ display: "flex", gap: 4, alignItems: "center" }}>
-          {[["calendar", "月曆"], ["stats", "統計"]].map(([v, l]) => (
-            <button key={v} style={S.navBtn(view === v)} onClick={() => setView(v)}>{l}</button>
-          ))}
-          <button style={{ ...S.navBtn(false), background: "rgba(42,150,100,0.1)", color: "#2a8a5a" }} onClick={exportPDF}>🖨️</button>
-          <button onClick={handleLogout} style={{ ...S.navBtn(false), fontSize: 11, color: C.red + "cc" }}>登出</button>
-        </div>
-      </div>
-      <div style={S.main}>
-        {view === "calendar" && <CalendarView />}
-        {view === "entry" && <EntryView />}
-        {view === "stats" && <StatsView />}
-      </div>
-      <div style={{ padding: "12px 20px", fontSize: 11, color: C.textLight, textAlign: "center" }}>
-        內容根據台灣頭痛學會之建議制定 · 僅供個人記錄，非醫療建議
-      </div>
-    </div>
-  );
+  const win=window.open('','_blank');
+  win.document.write(html);win.document.close();
+  setTimeout(()=>win.print(),500);
 }
 
-    const root = ReactDOM.createRoot(document.getElementById("root"));
-    root.render(React.createElement(HeadacheDiary));
+// ── 工具 ──
+function el(tag,props={}){
+  const e=document.createElement(tag);
+  Object.entries(props).forEach(([k,v])=>{
+    if(k==='className')e.className=v;
+    else if(k==='style'&&typeof v==='string')e.style.cssText=v;
+    else if(k in e)e[k]=v;
+    else e.setAttribute(k,v);
+  });
+  return e;
+}
 
-    if ("serviceWorker" in navigator) {
-      window.addEventListener("load", () => {
-        navigator.serviceWorker.register("sw.js").catch(() => {});
-      });
-    }
-  </script>
+// 啟動
+render();
+
+if('serviceWorker' in navigator){
+  window.addEventListener('load',()=>{navigator.serviceWorker.register('sw.js').catch(()=>{});});
+}
+</script>
 </body>
 </html>
