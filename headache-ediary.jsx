@@ -1,36 +1,4 @@
-<!DOCTYPE html>
-<html lang="zh-Hant">
-<head>
-  <meta charset="UTF-8"/>
-  <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no"/>
-  <meta name="theme-color" content="#2a82aa"/>
-  <meta name="apple-mobile-web-app-capable" content="yes"/>
-  <meta name="apple-mobile-web-app-status-bar-style" content="default"/>
-  <meta name="apple-mobile-web-app-title" content="頭痛日記"/>
-  <meta name="description" content="頭痛症狀記錄與追蹤工具 - 台灣頭痛學會建議格式"/>
-  <link rel="manifest" href="manifest.json"/>
-  <link rel="apple-touch-icon" href="icon-192.png"/>
-  <link rel="icon" type="image/png" href="icon-192.png"/>
-  <title>頭痛日記</title>
-  <style>
-    *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
-    body{background:#d2eaf8;overscroll-behavior:none}
-    #root{min-height:100vh}
-    input[type=range]{-webkit-appearance:none;width:100%;height:6px;border-radius:3px;background:rgba(74,138,176,0.2);outline:none}
-    input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:22px;height:22px;border-radius:50%;background:#4a9abf;cursor:pointer;box-shadow:0 2px 6px rgba(42,130,170,0.4)}
-    input,select,textarea{outline:none}
-    select{-webkit-appearance:none;appearance:none}
-    ::-webkit-scrollbar{width:4px}
-    ::-webkit-scrollbar-thumb{background:rgba(74,138,176,0.3);border-radius:2px}
-  </style>
-</head>
-<body>
-  <div id="root"></div>
-  <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
-  <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
-  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-  <script type="text/babel" data-presets="react">
-
+import { useState, useEffect, useCallback } from "react";
 
 const SYMPTOMS = ["噁心或嘔吐", "怕光", "怕吵", "搏動性疼痛", "單側頭痛", "活動使頭痛加劇"];
 const MEDICATIONS = ["未服藥", "布洛芬", "普拿疼／乙醯胺酚", "阿斯匹靈", "舒馬曲坦", "利紮曲坦", "萘普生", "其他"];
@@ -178,7 +146,7 @@ function AuthScreen({ onLogin }) {
 // ══════════════════════════════
 //  主日記 App
 // ══════════════════════════════
-function HeadacheDiary() {
+export default function HeadacheDiary() {
   const [user, setUser] = useState(null); // { id, name }
   const [view, setView] = useState("calendar");
   const t = todayInfo();
@@ -628,15 +596,3 @@ ${rows.map(({ day, morning, afternoon, evening, symptoms, duration, medication, 
     </div>
   );
 }
-
-    const root = ReactDOM.createRoot(document.getElementById("root"));
-    root.render(React.createElement(HeadacheDiary));
-
-    if ("serviceWorker" in navigator) {
-      window.addEventListener("load", () => {
-        navigator.serviceWorker.register("sw.js").catch(() => {});
-      });
-    }
-  </script>
-</body>
-</html>
