@@ -21,15 +21,6 @@
     ::-webkit-scrollbar{width:4px}
     ::-webkit-scrollbar-thumb{background:rgba(74,138,176,0.3);border-radius:2px}
     .btn{cursor:pointer;border:none;font-family:inherit}
-    /* Auth */
-    .auth-root{min-height:100vh;background:linear-gradient(160deg,#e8f5fb,#d2eaf8,#bcdff5);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px}
-    .auth-card{background:rgba(255,255,255,0.9);border:1px solid rgba(74,154,191,0.2);border-radius:20px;padding:32px;width:100%;max-width:360px;box-shadow:0 4px 24px rgba(74,154,191,0.12)}
-    .auth-title{text-align:center;margin-bottom:24px}
-    .auth-input{width:100%;padding:12px 14px;border:1px solid rgba(74,138,176,0.3);border-radius:10px;font-size:15px;margin-bottom:12px;background:rgba(255,255,255,0.9);color:#1a3a52}
-    .auth-btn-blue{width:100%;padding:13px;background:linear-gradient(135deg,#4a9abf,#2a82aa);border-radius:10px;color:#fff;font-size:15px;margin-bottom:10px;box-shadow:0 3px 12px rgba(42,130,170,0.2)}
-    .auth-btn-green{width:100%;padding:13px;background:linear-gradient(135deg,#3aaa7a,#2a8a5a);border-radius:10px;color:#fff;font-size:15px;margin-bottom:10px}
-    .auth-err{color:#d04040;font-size:12px;margin-bottom:10px;text-align:center}
-    .auth-link{color:#2a82aa;font-size:13px;text-align:center;cursor:pointer;text-decoration:underline}
     /* App */
     .app-root{min-height:100vh;background:linear-gradient(160deg,#e8f5fb,#d2eaf8,#bcdff5);color:#1a3a52;display:flex;flex-direction:column;align-items:center}
     .app-header{width:100%;max-width:520px;padding:16px 20px 0;display:flex;align-items:center;justify-content:space-between}
@@ -60,125 +51,47 @@ const monthKey=(y,m)=>`${y}-${String(m).padStart(2,'0')}`;
 const painColor=v=>{const n=parseInt(v);if(!n)return'#7aaac8';if(n<=3)return'#2a9a6a';if(n<=6)return'#e09020';return'#d04040'};
 const painBg=v=>{const n=parseInt(v);if(!n)return'rgba(74,138,176,0.08)';if(n<=3)return'rgba(42,154,106,0.12)';if(n<=6)return'rgba(224,144,32,0.12)';return'rgba(208,64,64,0.12)'};
 
-// ── 帳號 ──
-const getAccounts=()=>{try{return JSON.parse(localStorage.getItem('hd-accounts')||'{}')}catch{return{}}};
-const saveAccounts=a=>{try{localStorage.setItem('hd-accounts',JSON.stringify(a))}catch{}};
-const hashPass=s=>{let h=0;for(let i=0;i<s.length;i++)h=(Math.imul(31,h)+s.charCodeAt(i))|0;return String(h)};
-
 // ── 狀態 ──
 let state={
-  user:null,
   view:'calendar',
   year:todayInfo().year,
   month:todayInfo().month,
   selectedDay:todayInfo().day,
   monthData:{},
   nextVisit:'',
-  authMode:'login',
-  authErr:'',
 };
 
 const defEntry=()=>({morning:'',afternoon:'',evening:'',symptoms:[],duration:'',medication:'未服藥',medicationEffect:'',stress:'',exercise:'',dizzy:false,dizzyLevel:''});
 const getEntry=day=>state.monthData[day]||defEntry();
-const userKey=suf=>state.user?`hd-${state.user.id}-${suf}`:null;
 const mKey=()=>monthKey(state.year,state.month);
 
 function loadMonth(){
-  if(!state.user)return;
   try{
-    const d=localStorage.getItem(userKey(`data-${mKey()}`));
+    const d=localStorage.getItem(`hd-data-${mKey()}`);
     state.monthData=d?JSON.parse(d):{};
-    const nv=localStorage.getItem(userKey(`nv-${mKey()}`));
+    const nv=localStorage.getItem(`hd-nv-${mKey()}`);
     state.nextVisit=nv||'';
   }catch{state.monthData={};state.nextVisit='';}
 }
 
 function saveDay(day,data){
-  if(!state.user)return;
   state.monthData={...state.monthData,[day]:data};
-  try{localStorage.setItem(userKey(`data-${mKey()}`),JSON.stringify(state.monthData))}catch{}
+  try{localStorage.setItem(`hd-data-${mKey()}`,JSON.stringify(state.monthData))}catch{}
 }
 
 function saveNextVisit(v){
   state.nextVisit=v;
-  try{localStorage.setItem(userKey(`nv-${mKey()}`),v)}catch{}
+  try{localStorage.setItem(`hd-nv-${mKey()}`,v)}catch{}
 }
 
-// 嘗試自動登入
-try{const u=JSON.parse(localStorage.getItem('hd-current-user')||'null');if(u){state.user=u;loadMonth();}}catch{}
+// 載入當月資料
+loadMonth();
 
 // ── render ──
 function render(){
   const root=document.getElementById('root');
   root.innerHTML='';
-  if(!state.user){renderAuth(root);}
-  else{renderApp(root);}
-}
-
-// ── 登入畫面 ──
-function renderAuth(root){
-  const div=el('div',{className:'auth-root'});
-  const card=el('div',{className:'auth-card'});
-
-  const titleDiv=el('div',{className:'auth-title'});
-  titleDiv.innerHTML='<div style="font-size:48px">🧠</div><div style="font-size:22px;font-weight:bold;color:#2a82aa;margin-top:8px">頭痛日記</div><div style="font-size:12px;color:#7aaac8;margin-top:4px">台灣頭痛學會建議格式</div>';
-  card.appendChild(titleDiv);
-
-  const errDiv=el('div',{className:'auth-err',id:'auth-err'});
-  errDiv.textContent=state.authErr||'';
-  card.appendChild(errDiv);
-
-  const nameInp=el('input',{className:'auth-input btn',placeholder:'姓名（作為登入帳號）',type:'text'});
-  card.appendChild(nameInp);
-  const passInp=el('input',{className:'auth-input btn',placeholder:'密碼',type:'password'});
-  card.appendChild(passInp);
-
-  let pass2Inp=null;
-  if(state.authMode==='register'){
-    pass2Inp=el('input',{className:'auth-input btn',placeholder:'確認密碼',type:'password'});
-    card.appendChild(pass2Inp);
-  }
-
-  const mainBtn=el('button',{className:`btn ${state.authMode==='login'?'auth-btn-blue':'auth-btn-green'}`});
-  mainBtn.textContent=state.authMode==='login'?'登入':'建立帳號';
-  mainBtn.onclick=()=>{
-    const name=nameInp.value.trim();
-    const pass=passInp.value;
-    const pass2=pass2Inp?pass2Inp.value:'';
-    state.authErr='';
-    if(!name||!pass){state.authErr='請輸入姓名與密碼';render();return;}
-    const accs=getAccounts();
-    const key=name.toLowerCase();
-    if(state.authMode==='login'){
-      if(!accs[key]){state.authErr='找不到此帳號，請先註冊';render();return;}
-      if(accs[key].hash!==hashPass(pass)){state.authErr='密碼錯誤';render();return;}
-      state.user={id:key,name:accs[key].displayName};
-    } else {
-      if(pass.length<4){state.authErr='密碼至少需要4個字元';render();return;}
-      if(pass!==pass2){state.authErr='兩次密碼不一致';render();return;}
-      if(accs[key]){state.authErr='此姓名已被使用';render();return;}
-      accs[key]={displayName:name,hash:hashPass(pass)};
-      saveAccounts(accs);
-      state.user={id:key,name};
-    }
-    try{localStorage.setItem('hd-current-user',JSON.stringify(state.user))}catch{}
-    state.authErr='';
-    state.view='calendar';
-    loadMonth();
-    render();
-  };
-  card.appendChild(mainBtn);
-
-  const switchLink=el('div',{className:'auth-link'});
-  switchLink.textContent=state.authMode==='login'?'還沒有帳號？點此註冊':'已有帳號？點此登入';
-  switchLink.onclick=()=>{state.authMode=state.authMode==='login'?'register':'login';state.authErr='';render();};
-  card.appendChild(switchLink);
-
-  div.appendChild(card);
-  const note=el('div',{style:'font-size:10px;color:#7aaac8;margin-top:16px;text-align:center'});
-  note.textContent='資料僅儲存在此裝置，不會上傳至任何伺服器';
-  div.appendChild(note);
-  root.appendChild(div);
+  renderApp(root);
 }
 
 // ── App ──
@@ -188,7 +101,7 @@ function renderApp(root){
   // Header
   const hdr=el('div',{className:'app-header'});
   const logo=el('div',{style:'display:flex;align-items:center;gap:8px'});
-  logo.innerHTML=`<span style="font-size:14px;color:#2a82aa;font-weight:bold">🧠 頭痛日記</span><span style="font-size:12px;color:#7aaac8">· ${state.user.name}</span>`;
+  logo.innerHTML='<span style="font-size:14px;color:#2a82aa;font-weight:bold">🧠 頭痛日記</span>';
   hdr.appendChild(logo);
 
   const nav=el('div',{style:'display:flex;gap:4px;align-items:center'});
@@ -200,13 +113,6 @@ function renderApp(root){
   const pdfBtn=el('button',{className:'nav-btn btn',style:'background:rgba(42,150,100,0.1);color:#2a8a5a'});
   pdfBtn.textContent='🖨️';pdfBtn.onclick=exportPDF;
   nav.appendChild(pdfBtn);
-  const logoutBtn=el('button',{className:'nav-btn btn',style:'color:#d04040cc;font-size:11px'});
-  logoutBtn.textContent='登出';
-  logoutBtn.onclick=()=>{
-    state.user=null;try{localStorage.removeItem('hd-current-user')}catch{}
-    state.view='calendar';state.authMode='login';state.authErr='';render();
-  };
-  nav.appendChild(logoutBtn);
   hdr.appendChild(nav);
   wrap.appendChild(hdr);
 
@@ -217,7 +123,7 @@ function renderApp(root){
   wrap.appendChild(main);
 
   const footer=el('div',{className:'footer-note'});
-  footer.textContent='內容根據台灣頭痛學會之建議制定 · 僅供個人記錄，非醫療建議';
+  footer.innerHTML='內容根據台灣頭痛學會之建議制定 · 僅供個人記錄，非醫療建議<br>© 版權所有 廖晏輝醫師';
   wrap.appendChild(footer);
   root.appendChild(wrap);
 }
@@ -613,7 +519,7 @@ tr:nth-child(even) td{background:#f0f8fd}
 const sym=symptoms||[];
 return`<tr><td class="dc">${day}</td><td class="${pc(morning)}">${morning||'0'}</td><td class="${pc(afternoon)}">${afternoon||'0'}</td><td class="${pc(evening)}">${evening||'0'}</td><td>${sym.includes('噁心或嘔吐')?'<span class="ck">✓</span>':''}</td><td>${sym.includes('怕光')?'<span class="ck">✓</span>':''}</td><td>${sym.includes('怕吵')?'<span class="ck">✓</span>':''}</td><td>${sym.includes('搏動性疼痛')?'<span class="ck">✓</span>':''}</td><td>${sym.includes('單側頭痛')?'<span class="ck">✓</span>':''}</td><td>${sym.includes('活動使頭痛加劇')?'<span class="ck">✓</span>':''}</td><td>${duration||''}</td><td style="font-size:9px">${medication!=='未服藥'?medication:''}</td><td>${medicationEffect||''}</td><td>${dizzy?(dizzyLevel||'是'):''}</td><td>${stress||''}</td><td style="font-size:9px;text-align:left;padding-left:4px">${exercise||''}</td></tr>`;
 }).join('')}</tbody></table>
-<div class="ft">僅供個人記錄使用，不可取代求醫之需要，亦不能作為自我診斷或選擇治療的依據。</div>
+<div class="ft">僅供個人記錄使用，不可取代求醫之需要，亦不能作為自我診斷或選擇治療的依據。© 版權所有 廖晏輝醫師</div>
 </body></html>`;
   const win=window.open('','_blank');
   win.document.write(html);win.document.close();
