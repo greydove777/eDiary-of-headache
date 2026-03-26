@@ -202,7 +202,7 @@ function renderCalendar(main){
 
   // 統計小結
   const statRow=el('div',{style:'display:flex;gap:8px;margin-bottom:14px'});
-  [{val:stats.headacheDays,label:'頭痛天數',color:'#2a82aa'},{val:stats.avgPain,label:'平均疼痛',color:stats.headacheDays?painColor(parseFloat(stats.avgPain)||0):'#7aaac8'},{val:stats.medDays,label:'用藥天數',color:'#7a5aaa'},{val:stats.dizzyDays,label:'頭暈天數',color:'#5a7aaa'}].forEach(({val,label,color})=>{
+  [{val:stats.headacheDays,label:'頭痛天數',color:'#2a82aa'},{val:stats.moderateDays,label:'中度以上天數',color:'#e09020'},{val:stats.medDays,label:'用藥天數',color:'#7a5aaa'},{val:stats.dizzyDays,label:'頭暈天數',color:'#5a7aaa'}].forEach(({val,label,color})=>{
     const box=el('div',{style:'flex:1;background:rgba(255,255,255,0.82);border:1px solid rgba(74,154,191,0.18);border-radius:12px;padding:12px 6px;text-align:center'});
     const v=el('div',{style:`font-size:22px;font-weight:bold;color:${color}`});v.textContent=val;
     const l=el('div',{style:'font-size:9px;color:#7aaac8;margin-top:3px'});l.textContent=label;
@@ -406,7 +406,7 @@ function renderStats(main){
 
   // 數字
   const statRow=el('div',{style:'display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap'});
-  [{val:stats.headacheDays,label:'頭痛天數',color:'#2a82aa'},{val:stats.avgPain,label:'平均疼痛',color:stats.headacheDays?painColor(parseFloat(stats.avgPain)||0):'#7aaac8'},{val:stats.medDays,label:'用藥天數',color:'#7a5aaa'},{val:stats.dizzyDays,label:'頭暈天數',color:'#5a7aaa'}].forEach(({val,label,color})=>{
+  [{val:stats.headacheDays,label:'頭痛天數',color:'#2a82aa'},{val:stats.moderateDays,label:'中度以上天數',color:'#e09020'},{val:stats.medDays,label:'用藥天數',color:'#7a5aaa'},{val:stats.dizzyDays,label:'頭暈天數',color:'#5a7aaa'}].forEach(({val,label,color})=>{
     const box=el('div',{style:'flex:1 1 70px;background:rgba(255,255,255,0.82);border:1px solid rgba(74,154,191,0.18);border-radius:12px;padding:14px 8px;text-align:center'});
     const v=el('div',{style:`font-size:24px;font-weight:bold;color:${color}`});v.textContent=val;
     const l=el('div',{style:'font-size:10px;color:#7aaac8;margin-top:3px'});l.textContent=label;
@@ -469,6 +469,8 @@ function renderStats(main){
 // ── 統計計算 ──
 function calcStats(){
   const headacheDays=Object.entries(state.monthData).filter(([,e])=>parseInt(e.morning)>0||parseInt(e.afternoon)>0||parseInt(e.evening)>0).length;
+  // 中度以上：任一時段疼痛 >= 4
+  const moderateDays=Object.entries(state.monthData).filter(([,e])=>parseInt(e.morning)>=4||parseInt(e.afternoon)>=4||parseInt(e.evening)>=4).length;
   const medDays=Object.values(state.monthData).filter(e=>e.medication&&e.medication!=='未服藥').length;
   const dizzyDays=Object.values(state.monthData).filter(e=>e.dizzy).length;
   const allPains=Object.values(state.monthData).flatMap(e=>[parseInt(e.morning)||0,parseInt(e.afternoon)||0,parseInt(e.evening)||0].filter(v=>v>0));
@@ -476,7 +478,7 @@ function calcStats(){
   const symptomCount={};
   Object.values(state.monthData).forEach(e=>(e.symptoms||[]).forEach(s=>symptomCount[s]=(symptomCount[s]||0)+1));
   const topSymptoms=Object.entries(symptomCount).sort((a,b)=>b[1]-a[1]);
-  return{headacheDays,medDays,dizzyDays,allPains,avgPain,topSymptoms};
+  return{headacheDays,moderateDays,medDays,dizzyDays,allPains,avgPain,topSymptoms};
 }
 
 // ── PDF ──
@@ -489,13 +491,14 @@ function exportPDF(){
 <title>頭痛日記 ${state.year}年${state.month}月</title>
 <style>*{box-sizing:border-box;margin:0;padding:0}body{font-family:'Microsoft JhengHei','PingFang TC',sans-serif;font-size:11px;color:#1a3a52}
 @page{size:A4 landscape;margin:10mm 8mm}
+@media print{body{-webkit-print-color-adjust:exact;print-color-adjust:exact}}
 .hdr{display:flex;justify-content:space-between;margin-bottom:8px;padding-bottom:6px;border-bottom:2px solid #2a82aa}
 .title{font-size:18px;font-weight:bold;color:#2a82aa}.sub{font-size:10px;color:#7aaac8;margin-top:2px}
 .meta{text-align:right;font-size:11px;color:#4a7a9a;line-height:1.8}
 .sum{display:flex;gap:12px;margin-bottom:8px}
 .stat{background:#e8f5fb;border:1px solid #b0d8f0;border-radius:6px;padding:5px 12px;text-align:center}
 .sv{font-size:16px;font-weight:bold;color:#2a82aa}.sl{font-size:9px;color:#7aaac8}
-table{width:100%;border-collapse:collapse}
+table{width:100%;border-collapse:collapse;page-break-inside:avoid}
 th{background:#2a82aa;color:#fff;padding:5px 3px;text-align:center;font-size:10px;font-weight:bold;border:1px solid #1a6a8a}
 td{padding:4px 3px;text-align:center;border:1px solid #c0d8e8;font-size:10px;vertical-align:middle}
 tr:nth-child(even) td{background:#f0f8fd}
@@ -505,10 +508,11 @@ tr:nth-child(even) td{background:#f0f8fd}
 </style></head><body>
 <div class="hdr">
 <div><div class="title">🧠 頭痛日記</div><div class="sub">內容根據台灣頭痛學會之建議制定</div></div>
-<div class="meta"><b>${state.user?.name} · ${state.year}年${state.month}月</b>${state.nextVisit?'<br>下次回診：'+state.nextVisit:''}<br>列印：${new Date().toLocaleDateString('zh-TW')}</div>
+<div class="meta"><b>${state.year}年${state.month}月</b>${state.nextVisit?'<br>下次回診：'+state.nextVisit:''}<br>列印：${new Date().toLocaleDateString('zh-TW')}</div>
 </div>
 <div class="sum">
 <div class="stat"><div class="sv">${stats.headacheDays}</div><div class="sl">頭痛天數</div></div>
+<div class="stat"><div class="sv">${stats.moderateDays}</div><div class="sl">中度以上天數</div></div>
 <div class="stat"><div class="sv">${stats.avgPain}</div><div class="sl">平均疼痛</div></div>
 <div class="stat"><div class="sv">${stats.medDays}</div><div class="sl">用藥天數</div></div>
 <div class="stat"><div class="sv">${stats.dizzyDays}</div><div class="sl">頭暈天數</div></div>
@@ -520,10 +524,11 @@ const sym=symptoms||[];
 return`<tr><td class="dc">${day}</td><td class="${pc(morning)}">${morning||'0'}</td><td class="${pc(afternoon)}">${afternoon||'0'}</td><td class="${pc(evening)}">${evening||'0'}</td><td>${sym.includes('噁心或嘔吐')?'<span class="ck">✓</span>':''}</td><td>${sym.includes('怕光')?'<span class="ck">✓</span>':''}</td><td>${sym.includes('怕吵')?'<span class="ck">✓</span>':''}</td><td>${sym.includes('搏動性疼痛')?'<span class="ck">✓</span>':''}</td><td>${sym.includes('單側頭痛')?'<span class="ck">✓</span>':''}</td><td>${sym.includes('活動使頭痛加劇')?'<span class="ck">✓</span>':''}</td><td>${duration||''}</td><td style="font-size:9px">${medication!=='未服藥'?medication:''}</td><td>${medicationEffect||''}</td><td>${dizzy?(dizzyLevel||'是'):''}</td><td>${stress||''}</td><td style="font-size:9px;text-align:left;padding-left:4px">${exercise||''}</td></tr>`;
 }).join('')}</tbody></table>
 <div class="ft">僅供個人記錄使用，不可取代求醫之需要，亦不能作為自我診斷或選擇治療的依據。© 版權所有 廖晏輝醫師</div>
+<script>window.onload=function(){window.print();window.onafterprint=function(){window.close();};}<\/script>
 </body></html>`;
   const win=window.open('','_blank');
-  win.document.write(html);win.document.close();
-  setTimeout(()=>win.print(),500);
+  win.document.write(html);
+  win.document.close();
 }
 
 // ── 工具 ──
