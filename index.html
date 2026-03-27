@@ -489,22 +489,26 @@ function exportPDF(){
   const pc=v=>{const n=parseInt(v);if(!n)return'p0';if(n<=3)return'pl';if(n<=6)return'pm';return'ph'};
   const html=`<!DOCTYPE html><html lang="zh-Hant"><head><meta charset="UTF-8"/>
 <title>頭痛日記 ${state.year}年${state.month}月</title>
-<style>*{box-sizing:border-box;margin:0;padding:0}body{font-family:'Microsoft JhengHei','PingFang TC',sans-serif;font-size:11px;color:#1a3a52}
-@page{size:A4 landscape;margin:10mm 8mm}
-@media print{body{-webkit-print-color-adjust:exact;print-color-adjust:exact}}
-.hdr{display:flex;justify-content:space-between;margin-bottom:8px;padding-bottom:6px;border-bottom:2px solid #2a82aa}
-.title{font-size:18px;font-weight:bold;color:#2a82aa}.sub{font-size:10px;color:#7aaac8;margin-top:2px}
-.meta{text-align:right;font-size:11px;color:#4a7a9a;line-height:1.8}
-.sum{display:flex;gap:12px;margin-bottom:8px}
-.stat{background:#e8f5fb;border:1px solid #b0d8f0;border-radius:6px;padding:5px 12px;text-align:center}
-.sv{font-size:16px;font-weight:bold;color:#2a82aa}.sl{font-size:9px;color:#7aaac8}
-table{width:100%;border-collapse:collapse;page-break-inside:avoid}
-th{background:#2a82aa;color:#fff;padding:5px 3px;text-align:center;font-size:10px;font-weight:bold;border:1px solid #1a6a8a}
-td{padding:4px 3px;text-align:center;border:1px solid #c0d8e8;font-size:10px;vertical-align:middle}
+<style>*{box-sizing:border-box;margin:0;padding:0}body{font-family:'Microsoft JhengHei','PingFang TC',sans-serif;font-size:9px;color:#1a3a52}
+@page{size:A4 landscape;margin:6mm 6mm}
+@media print{
+  html,body{width:297mm;height:210mm}
+  body{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  table{page-break-inside:avoid}
+}
+.hdr{display:flex;justify-content:space-between;margin-bottom:5px;padding-bottom:4px;border-bottom:2px solid #2a82aa}
+.title{font-size:14px;font-weight:bold;color:#2a82aa}.sub{font-size:8px;color:#7aaac8;margin-top:1px}
+.meta{text-align:right;font-size:9px;color:#4a7a9a;line-height:1.6}
+.sum{display:flex;gap:6px;margin-bottom:5px}
+.stat{background:#e8f5fb;border:1px solid #b0d8f0;border-radius:4px;padding:3px 8px;text-align:center;flex:1}
+.sv{font-size:13px;font-weight:bold;color:#2a82aa}.sl{font-size:7px;color:#7aaac8}
+table{width:100%;border-collapse:collapse;table-layout:fixed}
+th{background:#2a82aa;color:#fff;padding:3px 2px;text-align:center;font-size:8px;font-weight:bold;border:1px solid #1a6a8a;white-space:nowrap;overflow:hidden}
+td{padding:2px 2px;text-align:center;border:1px solid #c0d8e8;font-size:8px;vertical-align:middle;white-space:nowrap;overflow:hidden}
 tr:nth-child(even) td{background:#f0f8fd}
-.dc{font-weight:bold;color:#2a82aa;background:#e8f5fb!important;width:26px}
+.dc{font-weight:bold;color:#2a82aa;background:#e8f5fb!important;width:20px}
 .p0{color:#aaa}.pl{color:#2a9a6a;font-weight:bold}.pm{color:#e09020;font-weight:bold}.ph{color:#d04040;font-weight:bold}
-.ck{color:#2a82aa}.ft{margin-top:8px;font-size:9px;color:#7aaac8;text-align:center;border-top:1px solid #c0d8e8;padding-top:6px}
+.ck{color:#2a82aa}.ft{margin-top:4px;font-size:7px;color:#7aaac8;text-align:center;border-top:1px solid #c0d8e8;padding-top:4px}
 </style></head><body>
 <div class="hdr">
 <div><div class="title">🧠 頭痛日記</div><div class="sub">內容根據台灣頭痛學會之建議制定</div></div>
@@ -527,13 +531,22 @@ return`<tr><td class="dc">${day}</td><td class="${pc(morning)}">${morning||'0'}<
 </body></html>`;
   // 用隱藏 iframe 列印，不開新視窗
   const iframe=document.createElement('iframe');
-  iframe.style.cssText='position:fixed;top:-9999px;left:-9999px;width:0;height:0;border:none';
+  iframe.style.cssText='position:fixed;top:-9999px;left:-9999px;width:1px;height:1px;border:none';
   document.body.appendChild(iframe);
   iframe.contentDocument.open();
   iframe.contentDocument.write(html);
   iframe.contentDocument.close();
-  iframe.contentWindow.onafterprint=()=>{document.body.removeChild(iframe);};
-  setTimeout(()=>iframe.contentWindow.print(),600);
+  // 強制橫式：注入 landscape meta + style
+  const meta=iframe.contentDocument.createElement('meta');
+  meta.name='viewport';
+  meta.content='width=1200';
+  iframe.contentDocument.head.appendChild(meta);
+  iframe.contentWindow.onafterprint=()=>{
+    try{document.body.removeChild(iframe);}catch{}
+  };
+  setTimeout(()=>{
+    try{iframe.contentWindow.print();}catch(e){console.log(e);}
+  },800);
 }
 
 // ── 工具 ──
