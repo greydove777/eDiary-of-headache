@@ -7,8 +7,8 @@
   <meta name="apple-mobile-web-app-capable" content="yes"/>
   <meta name="apple-mobile-web-app-status-bar-style" content="default"/>
   <meta name="apple-mobile-web-app-title" content="頭痛日記"/>
+  <link rel="manifest" href="manifest.json"/>
   <link rel="apple-touch-icon" href="icon-192.png"/>
-  <link rel="apple-touch-icon-precomposed" href="icon-192.png"/>
   <title>頭痛日記</title>
   <style>
     *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
@@ -524,11 +524,16 @@ const sym=symptoms||[];
 return`<tr><td class="dc">${day}</td><td class="${pc(morning)}">${morning||'0'}</td><td class="${pc(afternoon)}">${afternoon||'0'}</td><td class="${pc(evening)}">${evening||'0'}</td><td>${sym.includes('噁心或嘔吐')?'<span class="ck">✓</span>':''}</td><td>${sym.includes('怕光')?'<span class="ck">✓</span>':''}</td><td>${sym.includes('怕吵')?'<span class="ck">✓</span>':''}</td><td>${sym.includes('搏動性疼痛')?'<span class="ck">✓</span>':''}</td><td>${sym.includes('單側頭痛')?'<span class="ck">✓</span>':''}</td><td>${sym.includes('活動使頭痛加劇')?'<span class="ck">✓</span>':''}</td><td>${duration||''}</td><td style="font-size:9px">${medication!=='未服藥'?medication:''}</td><td>${medicationEffect||''}</td><td>${dizzy?(dizzyLevel||'是'):''}</td><td>${stress||''}</td><td style="font-size:9px;text-align:left;padding-left:4px">${exercise||''}</td></tr>`;
 }).join('')}</tbody></table>
 <div class="ft">僅供個人記錄使用，不可取代求醫之需要，亦不能作為自我診斷或選擇治療的依據。© 版權所有 廖晏輝醫師</div>
-<script>window.onload=function(){window.print();window.onafterprint=function(){window.close();};}<\/script>
 </body></html>`;
-  const win=window.open('','_blank');
-  win.document.write(html);
-  win.document.close();
+  // 用隱藏 iframe 列印，不開新視窗
+  const iframe=document.createElement('iframe');
+  iframe.style.cssText='position:fixed;top:-9999px;left:-9999px;width:0;height:0;border:none';
+  document.body.appendChild(iframe);
+  iframe.contentDocument.open();
+  iframe.contentDocument.write(html);
+  iframe.contentDocument.close();
+  iframe.contentWindow.onafterprint=()=>{document.body.removeChild(iframe);};
+  setTimeout(()=>iframe.contentWindow.print(),600);
 }
 
 // ── 工具 ──
